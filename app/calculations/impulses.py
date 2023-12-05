@@ -1,9 +1,9 @@
 import pandas as pd
 from threading import Thread
 
-from other_func import impulse_long, impulse_short
-from database import get_candles_by_symbol_tf, insert_impulse, get_all_impulses, get_impulses_by_tf, delete_impulse
-from other_func import get_df_from_candles
+from calculations.other_func import impulse_long, impulse_short
+from calculations.database import get_candles_by_symbol_tf, insert_impulse, get_all_impulses, get_impulses_by_tf, delete_impulse
+from calculations.other_func import get_df_from_candles
 
 def calculate_all_impulses_by_tf(tf, high_tf, currency_list,opened_impulses = pd.DataFrame(columns=['symbol'])):
     impulse_percent = 0.2

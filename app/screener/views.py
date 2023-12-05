@@ -2,6 +2,9 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from datetime import datetime
 from shared_memory_dict import SharedMemoryDict
+from calculations.parts_of_screener import main_func
+from multiprocessing import Process
+
 
 from screener.services import collect_data_for_levels, collect_all_data_for_screener
 from screener.database import get_all_close_levels, get_all_positions
@@ -10,12 +13,22 @@ from screener.charts import get_order_book_chart, get_levels_chart
 from screener.exchange import get_last_prices, get_currencies
 
 
+pr = 0
 def index(request):
 
-    data = collect_all_data_for_screener()
-    list_tf = [5,15,30,60]
+    global pr
+    if pr == 0:
+        pr = Process(target=main_func)
+        pr.start()
 
-    return render(request, 'screener/index.html', {'data':data, 'list_tf':list_tf})
+    try:
+        print('Good')
+        data = collect_all_data_for_screener()
+        list_tf = [5,15,30,60]
+
+        return render(request, 'screener/index.html', {'data':data, 'list_tf':list_tf})
+    except Exception as e:
+        print(e)
 
 curr_list = get_currencies(100)
 

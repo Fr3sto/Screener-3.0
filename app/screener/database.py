@@ -3,7 +3,7 @@ import io, csv
 from datetime import datetime
 
 
-conn = psycopg2.connect(dbname='Screener', user='fr3sto', password='endorphin25',host='db', port=5432)
+conn = psycopg2.connect(database='Screener', user='fr3sto', password='endorphin25',host='db', port=5432)
 curs = conn.cursor()
 
 # GET

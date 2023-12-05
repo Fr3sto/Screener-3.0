@@ -4,11 +4,11 @@ import requests
 import time
 from datetime import datetime
 
-from database import delete_all_candles, insert_candles_bulk, delete_all_levels
-from exchange import get_klines,get_kline
-from other_func import split
-from impulses import check_impulse_end, calculate_impulses
-from levels import check_level_end,calculate_levels_after_impulse
+from calculations.database import delete_all_candles, insert_candles_bulk, delete_all_levels
+from calculations.exchange import get_klines,get_kline
+from calculations.other_func import split
+from calculations.impulses import check_impulse_end, calculate_impulses
+from calculations.levels import check_level_end,calculate_levels_after_impulse
 
 TF_list = ['5m','15m','30m','1h','2h','4h']
 TF_list_num = [5,15,30,60,120,240]

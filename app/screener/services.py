@@ -34,6 +34,9 @@ def collect_all_data_for_screener():
     df_imp =  pd.DataFrame(get_all_impulses(), columns=['id','symbol','type','tf','price_s','date_s','price_e','date_e','is_open'])
     df_level = pd.DataFrame(get_all_levels(), columns=['id','symbol','tf','price','type','date_start'])
 
+    print(df_imp)
+    print(df_level)
+    print(currency_list)
     for curr in currency_list:
         result[curr[1]] = {'tf' : dict()}
 

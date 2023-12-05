@@ -1,8 +1,8 @@
 import pandas as pd
 from threading import Thread
 
-from other_func import split, get_min_max_list
-from database import (get_all_levels,delete_level, get_candles_by_symbol_tf, get_all_impulses, insert_levels, get_levels_by_tf,
+from calculations.other_func import split, get_min_max_list
+from calculations.database import (get_all_levels,delete_level, get_candles_by_symbol_tf, get_all_impulses, insert_levels, get_levels_by_tf,
                       delete_closed_level)
 
 def calculate_all_levels_after_impulse_by_tf(tf, impulses : pd.DataFrame):

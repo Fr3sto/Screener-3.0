@@ -1,14 +1,14 @@
 import time
 from datetime import datetime
 
-from exchange import get_currencies
-from candles import get_start_candles
+from calculations.exchange import get_currencies
+from calculations.candles import get_start_candles
 
-from database import get_candles_by_symbol_tf, delete_all_impulses, delete_all_levels
-from other_func import get_df_from_candles
-from impulses import calculate_impulses
-from levels import calculate_levels_after_impulse
-from candles import get_last_candles_and_impulse
+from calculations.database import get_candles_by_symbol_tf, delete_all_impulses, delete_all_levels, insert_currency
+from calculations.other_func import get_df_from_candles
+from calculations.impulses import calculate_impulses
+from calculations.levels import calculate_levels_after_impulse
+from calculations.candles import get_last_candles_and_impulse
 
 def get_start_data(currency_dict):
     t1 = time.time()
@@ -33,9 +33,9 @@ def get_start_data(currency_dict):
 
     print('Time left Levels ',t2 - t1)
 
-def main():
+def main_func():
     currency_dict = get_currencies(100)
-
+    insert_currency(currency_dict)
     get_start_data(currency_dict)
 
     last_minute = datetime.now().minute
@@ -50,4 +50,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main_func()
