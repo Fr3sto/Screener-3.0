@@ -5,7 +5,9 @@ from datetime import datetime
 
 postgreSQL_pool = pool.ThreadedConnectionPool(1, 100, user="fr3sto",
                                                          password="endorphin25",
-                                                         database="Screener")
+                                                         database="Screener",
+                                                         host='db',
+                                                         port=5432)
 
 # # CREATE TABLE
 
