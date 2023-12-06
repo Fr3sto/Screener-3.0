@@ -40,7 +40,7 @@ def get_start_candles(currency_dict : dict):
 
         print('End part ',partI)
         partI += 1 
-
+    
     insert_candles_bulk(result)
 
     print("Start candles inserted")

@@ -107,11 +107,11 @@ def check_impulse_end(list_TF, result_candles):
             candle = result_candles[str(symbol) + '-' + str(tf)]
             close = candle[0][4]
             if type == "L":
-                if close > price_end and close < (price_end - (price_end - price_start) * 0.5):
+                if close > price_end or close < (price_end - (price_end - price_start) * 0.5):
                     delete_impulse(symbol, tf)
 
             if type == "S":
-                if close < price_end and close > (price_end + (price_start - price_end) * 0.5):
+                if close < price_end or close > (price_end + (price_start - price_end) * 0.5):
                     delete_impulse(symbol, tf)
 
     
