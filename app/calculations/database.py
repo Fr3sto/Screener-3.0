@@ -6,8 +6,8 @@ from datetime import datetime
 postgreSQL_pool = pool.ThreadedConnectionPool(1, 100, user="fr3sto",
                                                          password="endorphin25",
                                                          host='db',
-                                                         port=5432,
-                                                         database="Screener")
+                                                         #port=5432,
+                                                         database="Screener2")
 # # DELETE
 
 # def delete_all_alert_levels():
@@ -18,7 +18,7 @@ postgreSQL_pool = pool.ThreadedConnectionPool(1, 100, user="fr3sto",
 def delete_order_book():
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
-    cursor.execute('delete from Order_Book_S')
+    cursor.execute('delete from Order_Book')
     connection.commit()
     cursor.close()
     postgreSQL_pool.putconn(connection)
@@ -186,7 +186,7 @@ def insert_order_book(order_book):
             for price, order in prices.items():
                 writer.writerow([symbol, type, price, order['pow'], order['quantity'], int(order['is_not_mm']), order['date_start'], order['date_end']])
     f.seek(0)
-    cursor.copy_expert("COPY Order_Book_S (Symbol,Type, Price, Pow, Quantity, Is_Not_MM, Date_Start, Date_End) FROM STDIN WITH csv", f)
+    cursor.copy_expert("COPY Order_Book (Symbol,Type, Price, Pow, Quantity, Is_Not_MM, Date_Start, Date_End) FROM STDIN WITH csv", f)
     connection.commit()
     cursor.close()
     postgreSQL_pool.putconn(connection)
@@ -289,6 +289,15 @@ def get_candles_by_symbol(symbol):
     postgreSQL_pool.putconn(connection)
     return candles
 
+def get_candles_by_tf(tf):
+    connection = postgreSQL_pool.getconn()
+    cursor = connection.cursor()
+    cursor.execute('SELECT * FROM Candles where TF = %s ORDER by date',(tf,))
+    candles = cursor.fetchall()
+    cursor.close()
+    postgreSQL_pool.putconn(connection)
+    return candles
+
 def get_candles_by_symbol_tf(symbol, tf):
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
@@ -301,7 +310,7 @@ def get_candles_by_symbol_tf(symbol, tf):
 def get_order_book():
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
-    cursor.execute('SELECT * FROM Order_Book_S')
+    cursor.execute('SELECT * FROM Order_Book')
     order_book = cursor.fetchall()
     cursor.close()
     postgreSQL_pool.putconn(connection)
@@ -468,7 +477,7 @@ def create_table_order_book():
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
     cursor.execute(
-        """ CREATE TABLE Order_Book_S(
+        """ CREATE TABLE Order_Book(
             id serial PRIMARY KEY,
             Symbol varchar(20) NOT NULL,
             Type varchar(10) NOT NULL,

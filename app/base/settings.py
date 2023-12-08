@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-+j+l#3i-&8%-4#iy^-%4c$^0whqbmkc_nv)=%#-wc2jpr3t&d3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['45.12.75.165', '127.0.0.1', 'localhost', 'impulsescreener.com']
+ALLOWED_HOSTS = ['45.12.75.165', '127.0.0.1', 'localhost', 'impulsescreener.com', '31.129.99.176']
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1', 'https://impulsescreener.com', 'https://www.impulsescreener.com', 'http://impulsescreener.com']
 
 
@@ -98,11 +98,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)

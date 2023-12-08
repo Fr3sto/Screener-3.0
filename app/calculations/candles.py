@@ -39,7 +39,8 @@ def get_start_candles(currency_dict : dict):
             th.join()
 
         print('End part ',partI)
-        partI += 1 
+        partI += 1
+
     
     insert_candles_bulk(result)
 

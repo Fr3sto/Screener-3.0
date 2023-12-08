@@ -3,7 +3,7 @@ import io, csv
 from datetime import datetime
 
 
-conn = psycopg2.connect(database='Screener', user='fr3sto', password='endorphin25',host='db', port=5432)
+conn = psycopg2.connect(database='Screener2', user='fr3sto', password='endorphin25',host='db')
 curs = conn.cursor()
 
 # GET
@@ -61,5 +61,15 @@ def get_all_close_levels():
 def get_all_alert_levels():
     curs.execute('SELECT * FROM Alert_Level ORDER BY id')
     levels = curs.fetchall()
-    return levels 
+    return levels
+
+def get_all_order_book():
+    curs.execute('SELECT * FROM Order_Book')
+    levels = curs.fetchall()
+    return levels
+
+def get_order_book_by_symbol(symbol):
+    curs.execute('SELECT * FROM Order_Book WHERE Symbol = %s',(symbol,))
+    levels = curs.fetchall()
+    return levels
 

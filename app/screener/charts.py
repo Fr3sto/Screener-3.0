@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import pandas as pd
 from datetime import timedelta
 
-from screener.database import get_levels_by_symbol, get_candles_by_symbol
+from screener.database import get_levels_by_symbol, get_candles_by_symbol, get_order_book_by_symbol
 
 def get_data_from_file(symbol):
     df_data = pd.read_csv("data/" + symbol + ".txt", sep=';', names=['Date','Level','Best_bid', 'Best_ask','Type'])
@@ -85,7 +85,7 @@ def get_levels_chart(symbol):
     
     return fig.to_html()
 
-def get_chart_with_impulse(df, impulse,level_list, tf):
+def get_chart_with_impulse(df, impulse,level_list, tf, symbol):
     #fig = px.line(df, x = 'Date', y = 'Close')
 
     fig = go.Figure(data=[go.Candlestick(x=df['Date'],
@@ -119,6 +119,8 @@ def get_chart_with_impulse(df, impulse,level_list, tf):
                           x0=impulse[5], y0=impulse[4], x1=dateEnd, y1=impulse[6],
                           line=dict(color=color))
     
+
+    
     if len(level_list) != 0:
         for level in level_list:
             # if level[4] == need_type_level:
@@ -135,4 +137,33 @@ def get_chart_with_impulse(df, impulse,level_list, tf):
                                       line=dict(color=color, width=3))
 
     
+    df_order_book = pd.DataFrame(get_order_book_by_symbol(symbol), columns=['id','symbol','type','price','pow','quantity','is_not_mm','date_start','date_end'])
+    df_order_book['date_start'] = pd.to_datetime(df_order_book['date_start'])
+    df_order_book['date_end'] = pd.to_datetime(df_order_book['date_end'])
+
+    if not df_order_book.empty:
+        last_price = df['Close'].iloc[-1]
+        for order in df_order_book.itertuples():
+            if (order.date_end - order.date_start).seconds / 60 > 15:
+                if impulse[2] == 'L':
+                    up_price = impulse[6]
+                    up_price += up_price * 0.01
+
+                    down_price = impulse[4]
+
+                    if order.price < up_price and order.price > down_price:
+                        fig.add_shape(type="line",
+                                       x0=order.date_start, y0=order.price, x1=df['Date'].iloc[-1], y1=order.price,
+                                      line=dict(color='Blue', width=3))
+                else:
+                    up_price = impulse[4]
+
+                    down_price = impulse[6]
+                    down_price -= down_price * 0.01
+
+                    if order.price < up_price and order.price > down_price:
+                        fig.add_shape(type="line",
+                                       x0=order.date_start, y0=order.price, x1=df['Date'].iloc[-1], y1=order.price,
+                                      line=dict(color='Blue', width=3))
+
     return fig.to_html()

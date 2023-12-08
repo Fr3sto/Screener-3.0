@@ -83,6 +83,11 @@ def impulse_short(df_HighTF, result_impulses, pulse_percent=0.2):
 
     for i, x in enumerate(list):
         if isDown:
+            if list[i][2] < supermin:
+                    supermin = list[i][2]
+
+            if list[i][1] > supermax:
+                supermax = list[i][1]
             if list[i][3] < min:
                 min = list[i][3]
                 height = max - min
@@ -93,11 +98,7 @@ def impulse_short(df_HighTF, result_impulses, pulse_percent=0.2):
                 if i + 1 != len(list):
                     dateEnd = list[i + 1][5]
 
-                if list[i][2] < supermin:
-                    supermin = list[i][2]
-
-                if list[i][1] > supermax:
-                    supermax = list[i][1]
+                
             else:
                 count_after_trend_bar += 1
                 curr_diff = list[i][3] - min
@@ -166,6 +167,12 @@ def impulse_long(df_HighTF,result_impulses, pulse_percent = 0.2):
 
     for i, x in enumerate(list):
         if isUp:
+
+            if list[i][1] > supermax:
+                    supermax = list[i][1]
+
+            if list[i][2] < supermin:
+                supermin = list[i][2]
             if list[i][3] > max:
                 max = list[i][3]
                 height = max - min
@@ -176,11 +183,7 @@ def impulse_long(df_HighTF,result_impulses, pulse_percent = 0.2):
                 if i + 1 != len(list):
                     dateEnd = list[i + 1][5]
 
-                if list[i][1] > supermax:
-                    supermax = list[i][1]
-
-                if list[i][2] < supermin:
-                    supermin = list[i][2]
+                
             else:
                 count_after_trend_bar += 1
                 curr_diff = max - list[i][3]

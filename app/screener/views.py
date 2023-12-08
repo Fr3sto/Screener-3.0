@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from datetime import datetime
 from shared_memory_dict import SharedMemoryDict
 from calculations.parts_of_screener import main_func
+from calculations.stream_order_book import stream_ob
 from multiprocessing import Process
 
 
@@ -14,13 +15,22 @@ from screener.exchange import get_last_prices, get_currencies
 
 
 pr = 0
+pr_ob = 0
 def index(request):
 
     global pr
     if pr == 0:
-        pr = Process(target=main_func)
+        pr = Process(target=main_func, args=('S',))
         pr.start()
 
+        # pr_ob = Process(target=stream_ob,args=('S',))
+        # pr_ob.start()
+
+    global pr_ob
+    if pr != 0 and pr_ob == 0:
+        pr_ob = Process(target=stream_ob, args=('S',))
+        pr_ob.start()
+    
     try:
         print('Good')
         data = collect_all_data_for_screener()

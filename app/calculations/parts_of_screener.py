@@ -1,5 +1,6 @@
 import time
 from datetime import datetime
+from shared_memory_dict import SharedMemoryDict
 
 from calculations.exchange import get_currencies
 from calculations.candles import get_start_candles
@@ -33,11 +34,12 @@ def get_start_data(currency_dict):
 
     print('Time left Levels ',t2 - t1)
 
-def main_func():
+def main_func(exchange):
+
     currency_dict = get_currencies(100)
     insert_currency(currency_dict)
     get_start_data(currency_dict)
-
+    
     last_minute = datetime.now().minute
     while True:
         if datetime.now().minute != last_minute:
@@ -50,4 +52,4 @@ def main_func():
 
 
 if __name__ == '__main__':
-    main_func()
+    main_func('S')

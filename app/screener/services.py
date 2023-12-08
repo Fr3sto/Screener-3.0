@@ -1,5 +1,7 @@
 import pandas as pd
-from screener.database import get_all_currency, get_all_levels, get_all_impulses
+from shared_memory_dict import SharedMemoryDict
+
+from screener.database import get_all_currency, get_all_levels, get_all_impulses, get_all_order_book
 from screener.charts import get_chart_with_impulse
 
 def collect_data_for_levels():
@@ -31,28 +33,29 @@ def collect_all_data_for_screener():
     result = dict()
     empty_res = dict()
 
+    
     df_imp =  pd.DataFrame(get_all_impulses(), columns=['id','symbol','type','tf','price_s','date_s','price_e','date_e','is_open'])
-    df_level = pd.DataFrame(get_all_levels(), columns=['id','symbol','tf','price','type','date_start'])
 
-    print(df_imp)
-    print(df_level)
-    print(currency_list)
+    df_order_book = pd.DataFrame(get_all_order_book(), columns=['id','symbol','type','price','pow','quantity','is_not_mm','date_start','date_end'])
+    df_order_book['date_start'] = pd.to_datetime(df_order_book['date_start'])
+    df_order_book['date_end'] = pd.to_datetime(df_order_book['date_end'])
+    #df_level = pd.DataFrame(get_all_levels(), columns=['id','symbol','tf','price','type','date_start'])
+
+
+
+    # print(df_imp)
+    # print(df_level)
+    # print(currency_list)
     for curr in currency_list:
         result[curr[1]] = {'tf' : dict()}
-
+        
+        
         isImpulse = False
         for tf in list_tf:
             imp = df_imp[(df_imp['symbol'] == curr[1]) & (df_imp['tf'] == tf)]
             if not imp.empty:
-                # if imp['type'].iloc[0] == 'L':
-                #     need_type_level = 2
-                # else:
-                #     need_type_level = 1
-                level_list = df_level[(df_level['symbol'] == curr[1]) & (df_level['tf'] == tf)]# & (df_level['type'] == need_type_level)]
-                count_level = 0
-                if not level_list.empty:
-                    count_level = level_list.shape[0]
-                result[curr[1]]['tf'][tf] = {"text":"График", "type": imp['type'].iloc[0], "count_level" : count_level}
+                result[curr[1]]['tf'][tf] = {"text":"График", "type": imp['type'].iloc[0], "count_orders" : 0, 'price_start':imp['price_s'].iloc[0],
+                                             'price_end':imp['price_e'].iloc[0]}
                 isImpulse = True
             else:
                 result[curr[1]]['tf'][tf] = {}
@@ -61,6 +64,27 @@ def collect_all_data_for_screener():
             empty_res[curr[1]] = result[curr[1]]
             del result[curr[1]]
     
+
+    for symbol, tf in result.items():
+        df_ob = df_order_book[(df_order_book['symbol'] == symbol) & ((df_order_book['date_end'] - df_order_book['date_start']).dt.total_seconds() / 60 > 15)]
+        for tf, tf_list in tf.items():
+            for tf, value in tf_list.items():
+                if 'type' in value:
+                    if value['type'] == 'L':
+                        up_price = value['price_end']
+                        up_price += up_price * 0.01
+
+                        down_price = value['price_start']
+
+                        df_ob = df_ob[(df_ob['price'] < up_price) & (df_ob['price'] > down_price)]
+                    else:
+                        up_price = value['price_start']
+
+                        down_price = value['price_end']
+                        down_price -= down_price * 0.01
+
+                        df_ob = df_ob[(df_ob['price'] < up_price) & (df_ob['price'] > down_price)]
+                    value['count_orders'] = df_ob.shape[0]
     #result.update(empty_res)
     return result
 
@@ -71,7 +95,7 @@ def get_currency_chart_with_impulse(symbol, tf):
     df_candles = get_df_from_candles(candles)
     impulse = get_impulse_opened(symbol, tf)[0]
     level_list = get_levels_by_symbol_tf(symbol, tf)
-    return get_chart_with_impulse(df_candles, impulse,level_list, tf)
+    return get_chart_with_impulse(df_candles, impulse,level_list, tf,symbol)
 
 
 def get_df_from_candles(candles):

@@ -5,9 +5,9 @@ from datetime import datetime
 
 postgreSQL_pool = pool.ThreadedConnectionPool(1, 100, user="fr3sto",
                                                          password="endorphin25",
-                                                         database="Screener",
-                                                         host='db',
-                                                         port=5432)
+                                                         database="Screener2",
+                                                         host='db')#,
+                                                         #port=5432)
 
 # # CREATE TABLE
 
@@ -146,7 +146,7 @@ def create_table_order_book():
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
     cursor.execute(
-        """ CREATE TABLE Order_Book_S(
+        """ CREATE TABLE Order_Book(
             id serial PRIMARY KEY,
             Symbol varchar(20) NOT NULL,
             Type varchar(10) NOT NULL,

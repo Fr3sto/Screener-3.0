@@ -15,12 +15,12 @@ services:
       - db
   db:
     image: postgres:15
-    ports:
-      - 5432:5432
+    # ports:
+    #   - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
-      POSTGRES_DB: "Screener"
+      POSTGRES_DB: "Screener2"
       POSTGRES_USER: "fr3sto"
       POSTGRES_PASSWORD: "endorphin25"
   nginx:
