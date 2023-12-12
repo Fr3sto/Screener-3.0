@@ -41,7 +41,7 @@ def get_currencies(upper_limit : int):
     return currency_list
 
 def get_last_prices():
-    url = "https://fapi.binance.com/fapi/v1/ticker/bookTicker"
+    url = "https://api.binance.com/api/v3/ticker/bookTicker"
     data = requests.get(url).json()
     result = dict()
     for value in data:
