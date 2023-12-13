@@ -8,7 +8,7 @@
             <tr>
                 <th rowspan="2">Name</th>
                 {% comment %} <th colspan="2">1 min Orders</th> {% endcomment %}
-                {% for tf in list_tf %}<th colspan="2">{{ tf }} min</th>{% endfor %}
+                {% for tf in list_tf %}<th colspan="3">{{ tf }} min</th>{% endfor %}
             </tr>
             <tr>
                 {% comment %} <th>Order Bid</th>
@@ -16,6 +16,7 @@
                 {% for el in list_tf %}
                     <th>Have Impulse</th>
                     <th>Have Order</th>
+                    <th>Left Order Percent</th>
                 {% endfor %}
             </tr>
         </thead>
@@ -47,7 +48,11 @@
                             <td class="{{ value|color_filter_count_level }}">
                                 <p style="{{ value|color_filter_count_level_text }} text-align: center">{{ value.count_orders }}</p>
                             </td>
+                            <td class="{{ value|color_filter_count_level }}">
+                                <p style="{{ value|color_filter_count_level_text }} text-align: center">{{ value.left_pips_order }} %</p>
+                            </td>
                         {% else %}
+                            <td></td>
                             <td></td>
                             <td></td>
                         {% endif %}

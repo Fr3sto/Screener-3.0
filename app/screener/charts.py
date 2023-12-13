@@ -107,7 +107,7 @@ def get_chart_with_impulse(df, impulse, tf, symbol):
         down_price -= down_price * 0.01
 
     for order in order_book_list:
-        if order[3] < up_price and order[3] > down_price:
+        if order[3] < up_price and order[3] > down_price and order[6] == True:
                         fig.add_shape(type="line",
                                        x0=order[7], y0=order[3], x1=df['Date'].iloc[-1], y1=order[3],
                                       line=dict(color='Blue', width=3))

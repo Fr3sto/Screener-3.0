@@ -5,7 +5,8 @@
 {% block content %}
     
     <h1 style ='text-align:center'>Position</h1>
-    <table id="tblPositions"
+    <div class="table-responsive">
+        <table id="tblPositions"
            class="table mt-2 table-bordered table-striped table-hover table-responsive">
         <thead class="table-dark">
             <tr>
@@ -24,7 +25,10 @@
         <tbody>
         </tbody>
     </table>
+    </div>
+    
     <h1 style ='text-align:center'>Close Levels Spot</h1>
+    <div class="table-responsive">
                 <table id="tblCloseLevels_S"
                        class="table mt-2 table-bordered table-striped table-hover table-responsive">
                     <thead class="table-dark">
@@ -43,7 +47,9 @@
                     <tbody>
                     </tbody>
                 </table>
+            </div> 
                 <h1 style ='text-align:center'>Orders Spot</h1>
+                <div class="table-responsive">
                 <table id="tblOrders_S"
                        class="table mt-2 table-bordered table-striped table-hover table-responsive">
                     <thead class="table-dark">
@@ -59,6 +65,8 @@
                     <tbody>
                     </tbody>
                 </table>
+            </div>
+            
     <script>
         $(document).ready(function(){
             setInterval(function(){

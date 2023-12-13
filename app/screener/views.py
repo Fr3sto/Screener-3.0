@@ -66,9 +66,11 @@ def get_data(request):
             best_bid = last_prices[symbol]['best_bid']
             best_ask = last_prices[symbol]['best_ask']
 
+            if symbol == 'XMRUSDT':
+                pass
             for type, orders in order_book.items():
                 for price, order in orders.items():
-                    order_count_decimal = str(int(price / curr_list[symbol]['min_step_spot']))
+                    order_count_decimal = str(round(price / curr_list[symbol]['min_step_spot']))
                     
                     if order_count_decimal[-1] == '0':
                         if type == 'asks':

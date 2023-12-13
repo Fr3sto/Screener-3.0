@@ -2,7 +2,7 @@ import pandas as pd
 
 from screener.database import get_all_currency, get_all_impulses, get_all_order_book
 from screener.charts import get_chart_with_impulse
-
+from screener.exchange import get_last_prices
 
 def collect_all_data_for_screener(currency_list):
     
@@ -11,6 +11,7 @@ def collect_all_data_for_screener(currency_list):
     result = dict()
     empty_res = dict()
 
+    
     
     impulse_list =  get_all_impulses()
 
@@ -25,7 +26,10 @@ def collect_all_data_for_screener(currency_list):
         symbol = order[1]
         type = order[2]
         price = order[3]
-        order_book[symbol].append(price)
+        is_not_mm = order[6]
+        order_book[symbol].append((price,is_not_mm))
+
+    last_prices = get_last_prices()
 
     result = dict()
 
@@ -39,6 +43,7 @@ def collect_all_data_for_screener(currency_list):
 
         up_price = 0
         down_price = 0
+
         if type == 'L':
             up_price = price_end
             up_price += up_price * 0.01
@@ -50,24 +55,36 @@ def collect_all_data_for_screener(currency_list):
             down_price = price_end
             down_price -= down_price * 0.01
 
+        if symbol == 'NKNUSDT':
+            pass
         
         count_orders = 0
 
-        if symbol in orders_prices_symbol:
-            count_orders = orders_prices_symbol[symbol]
-        else:
-            for price in order_book[symbol]:
-                if price < up_price and price > down_price:
+        last_price = last_prices[symbol]['best_bid']
+        left_pips_list = []
+        left_pips_order = 0
+        if not symbol in orders_prices_symbol:
+            for price, is_not_mm in order_book[symbol]:
+                if price < up_price and price > down_price and is_not_mm == True:
                     count_orders += 1
-            orders_prices_symbol[symbol] = count_orders
+                    if price > last_price:
+                        left_pips_order = round(100 - last_price / price * 100,2)
+                    else:
+                        left_pips_order = round(100 - price / last_price * 100,2)
+                    left_pips_list.append(left_pips_order)
+            if len(left_pips_list) == 0:
+                left_pips_list.append(0)
+            orders_prices_symbol[symbol] = {'count_orders':count_orders, 'left_pips_order': min(left_pips_list)}
         
 
         if symbol in result:
             result[symbol]['tf'][tf] = {"text":"График", "type": type, "count_orders" : 0, 'price_start':price_start,
-                                              'price_end':price_end, 'count_orders':count_orders}
+                                              'price_end':price_end, 'count_orders':orders_prices_symbol[symbol]['count_orders'],
+                                              'left_pips_order':orders_prices_symbol[symbol]['left_pips_order']}
         else:
             result[symbol] = {'tf' : {tf : {"text":"График", "type": type, "count_orders" : 0, 'price_start':price_start,
-                                              'price_end':price_end, 'count_orders':count_orders}}}
+                                              'price_end':price_end, 'count_orders':orders_prices_symbol[symbol]['count_orders'],
+                                                'left_pips_order': orders_prices_symbol[symbol]['left_pips_order']}}}
             
     for symbol, value in result.items():
         if not 5 in value['tf']:
@@ -80,7 +97,25 @@ def collect_all_data_for_screener(currency_list):
             value['tf'][60] = {}
         value['tf'] = dict(sorted(value['tf'].items(), key=lambda item: item[0]))
 
-    return result
+
+    good_result = dict()
+    bad_result = dict()
+
+    for key,value in result.items():
+        is_good = False
+        for tf, value_2 in value['tf'].items():
+            if 'count_orders' in value_2 and value_2['count_orders'] != 0:
+                is_good = True
+                break
+        if is_good == True:
+            good_result[key] = result[key]
+        else:
+            bad_result[key] = result[key]
+    
+
+    # for key,value in bad_result.items():
+    #     good_result[key] = bad_result[key]
+    return good_result
 
 from screener.database import get_candles_by_symbol_tf, get_impulse_opened
 
