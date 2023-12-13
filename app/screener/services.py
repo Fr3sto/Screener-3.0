@@ -19,8 +19,8 @@ def collect_all_data_for_screener(currency_list):
     
     order_book = dict()
 
-    for symbol in currency_list:
-        order_book[symbol[1]] = []
+    for key,value in currency_list.items():
+        order_book[key] = []
 
     for order in order_book_list:
         symbol = order[1]
@@ -65,7 +65,8 @@ def collect_all_data_for_screener(currency_list):
         left_pips_order = 0
         if not symbol in orders_prices_symbol:
             for price, is_not_mm in order_book[symbol]:
-                if price < up_price and price > down_price and is_not_mm == True:
+                order_count_decimal = str(round(price / currency_list[symbol]['min_step']))
+                if price < up_price and price > down_price and is_not_mm == True and order_count_decimal[-1] == '0':
                     count_orders += 1
                     if price > last_price:
                         left_pips_order = round(100 - last_price / price * 100,2)
@@ -113,8 +114,8 @@ def collect_all_data_for_screener(currency_list):
             bad_result[key] = result[key]
     
 
-    # for key,value in bad_result.items():
-    #     good_result[key] = bad_result[key]
+    for key,value in bad_result.items():
+        good_result[key] = bad_result[key]
     return good_result
 
 from screener.database import get_candles_by_symbol_tf, get_impulse_opened

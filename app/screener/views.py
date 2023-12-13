@@ -14,7 +14,7 @@ def index(request):
 
     try:
         print('Good')
-        data = collect_all_data_for_screener(currency_list)
+        data = collect_all_data_for_screener(curr_list)
         list_tf = [5,15,30,60]
 
         return render(request, 'screener/index.html', {'data':data, 'list_tf':list_tf})
