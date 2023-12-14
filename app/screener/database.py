@@ -2,28 +2,28 @@
 import psycopg2
 
 
-# conn = psycopg2.connect(database='Screener', user='fr3sto', password='endorphin25',host='10.16.0.2', port=1234)
-# curs = conn.cursor()
-
-from sshtunnel import SSHTunnelForwarder #Run pip install sshtunnel
-server =  SSHTunnelForwarder(
-    ('31.129.99.176', 22), #Remote server IP and SSH port
-    ssh_username = "root",
-    ssh_password = "Endorphin25)",
-    remote_bind_address=('localhost', 1234),
-    local_bind_address=('localhost', 1234)) #PostgreSQL server IP and sever port on remote machine
-        
-server.start() #start ssh sever
-print ('Server connected via SSH')
-    
-conn = psycopg2.connect(
-    dbname='Screener',
-    user = 'fr3sto',
-    password='endorphin25',
-    host=server.local_bind_host,
-    port=server.local_bind_port)
-
+conn = psycopg2.connect(database='Screener', user='fr3sto', password='endorphin25',host='10.16.0.2', port=1234)
 curs = conn.cursor()
+
+# from sshtunnel import SSHTunnelForwarder #Run pip install sshtunnel
+# server =  SSHTunnelForwarder(
+#     ('31.129.99.176', 22), #Remote server IP and SSH port
+#     ssh_username = "root",
+#     ssh_password = "Endorphin25)",
+#     remote_bind_address=('localhost', 1234),
+#     local_bind_address=('localhost', 1234)) #PostgreSQL server IP and sever port on remote machine
+        
+# server.start() #start ssh sever
+# print ('Server connected via SSH')
+    
+# conn = psycopg2.connect(
+#     dbname='Screener',
+#     user = 'fr3sto',
+#     password='endorphin25',
+#     host=server.local_bind_host,
+#     port=server.local_bind_port)
+
+# curs = conn.cursor()
 
 # GET
 
