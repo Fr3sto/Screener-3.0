@@ -118,7 +118,7 @@ def get_data(request):
             my_list[7] = round(my_list[7],2)
             close_levels_result.append(my_list)
 
-        close_levels = sorted(close_levels, key=lambda x: x[4])
+        close_levels_result = sorted(close_levels_result, key=lambda x: x[4])
 
     except Exception as e:
         print(e)
