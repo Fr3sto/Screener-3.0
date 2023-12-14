@@ -61,11 +61,22 @@ def get_candles_by_symbol_tf(symbol,tf):
 
 def get_all_order_book():
     curs.execute('SELECT * from order_book where extract(epoch from date_end - date_start) / 60 > 15')
-    levels = curs.fetchall()
-    return levels
+    order_book = curs.fetchall()
+    return order_book
 
 def get_order_book_by_symbol(symbol):
     curs.execute('SELECT * from order_book where extract(epoch from date_end - date_start) / 60 > 15 and Symbol = %s',(symbol,))
+    order_book = curs.fetchall()
+    return order_book
+
+def get_all_levels():
+    curs.execute('SELECT * from Levels')
+    levels = curs.fetchall()
+    return levels
+
+
+def get_close_levels():
+    curs.execute('SELECT * from Close_Level')
     levels = curs.fetchall()
     return levels
 

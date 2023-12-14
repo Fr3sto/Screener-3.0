@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+from datetime import datetime
 
 
 from screener.services import collect_all_data_for_screener
-from screener.database import  get_all_positions,get_all_currency, get_all_order_book
+from screener.database import  get_all_positions,get_all_currency, get_all_order_book, get_all_levels
 from screener.charts import get_order_book_chart
 
 from screener.exchange import get_last_prices, get_currencies
@@ -28,17 +29,43 @@ curr_list = get_currencies(100)
 
 def get_data(request):
 
-    # positions = get_all_positions()
+    # close_levels_list = get_close_levels()
 
-    # res_positions = []
-    # for pos in positions:
-    #     my_list = list(pos)
-    #     my_list[4] = my_list[4].strftime("%H:%M:%S %d/%m/%Y")
-    #     res_positions.append(my_list)
+    # result_list = []
+    # for index, value in enumerate(close_levels_list):
+    #     my_list = list(close_levels_list[index])
+    #     symbol = my_list[1]
+    #     price_level = my_list[2]
+    #     type_level = my_list[3]
+    #     left_pips = my_list[4]
+    #     price_order_s = my_list[5]
+    #     pow_s = my_list[6]
+    #     time_live_s = my_list[7]
 
-    # positions = res_positions
+    #     left_Pips_order_s = 0
+
+    #     if price_order_s > 1000000 or price_order_s == 0:
+    #         price_order_s = 0
+    #         pow_s = 0
+    #         time_live_s = 0
+    #     else:
+    #         time_live_s = str((datetime.now() - time_live_s)).split('.')[0]
+    #         left_Pips_order_s = 0
+    #         if type_level == 1:
+    #             currPrice = price_level - price_level * left_pips / 100
+    #             left_Pips_order_s = (price_order_s - currPrice) / (currPrice / 100)
+    #         else:
+    #             currPrice = price_level + price_level * left_pips / 100
+    #             left_Pips_order_s = (currPrice - price_order_s) / (currPrice / 100)
+    #         left_Pips_order_s = round(left_Pips_order_s,2)
+
+    #     result_list.append([symbol, price_level,type_level,left_pips,
+    #                             price_order_s,pow_s,time_live_s,left_Pips_order_s])
+    
+    
+    # result_list = sorted(result_list, key=lambda x: x[3])
+
     good_orders = []
-    positions = []
     try:
         order_book_list = get_all_order_book()
         order_book = dict()
@@ -62,13 +89,11 @@ def get_data(request):
 
         
         last_prices = get_last_prices()
-        for symbol, order_book in order_book.items():
+        for symbol, types in order_book.items():
             best_bid = last_prices[symbol]['best_bid']
             best_ask = last_prices[symbol]['best_ask']
 
-            if symbol == 'XMRUSDT':
-                pass
-            for type, orders in order_book.items():
+            for type, orders in types.items():
                 for price, order in orders.items():
                     order_count_decimal = str(round(price / curr_list[symbol]['min_step_spot']))
                     
@@ -82,11 +107,62 @@ def get_data(request):
                         if left_pips_order <= 6 and time_live > 30 and order['is_not_mm'] == True:
                             good_orders.append([symbol, type, price, order['pow'],time_live, round(left_pips_order,2)])
         good_orders = sorted(good_orders, key=lambda x: x[5])
+
+
+        close_levels = []
+
+        levels_list = get_all_levels()
+
+        for level in levels_list:
+            symbol = level[1]
+            type_level = level[4]
+            price_level = level[3]
+            diff = 0
+
+            type_order = ''
+            if type_level == 1:
+                type_order = 'asks'
+                diff = 100 - round(last_prices[symbol]['best_ask'] / price_level, 4) * 100
+            else:
+                type_order = 'bids'
+                diff = 100 - round(price_level / last_prices[symbol]['best_bid'], 4) * 100
+
+            price_order = 0
+            pow = 0
+            time_live = 0
+            left_pips_order = 0
+            if diff < 1 and diff > -1:
+                best_bid = last_prices[symbol]['best_bid']
+                best_ask = last_prices[symbol]['best_ask']
+                for price, order in order_book[symbol][type_order].items():
+                    order_count_decimal = str(round(price / curr_list[symbol]['min_step_spot']))
+                    if order_count_decimal[-1] == '0':
+                        if type_order == 'asks' and price >= price_level and price < price_order:
+                            price_order = price
+                            pow = order['pow']
+                            time_live = (order['date_end'] - order['date_start']).seconds / 60
+                            left_pips_order = (price - best_ask) / (best_ask / 100)
+                        elif type_order == 'bids' and price <= price_level and price > price_order:
+                            price_order = price
+                            pow = order['pow']
+                            time_live = (order['date_end'] - order['date_start']).seconds / 60
+                            left_pips_order = (best_bid - price) / (best_bid / 100)
+                
+                if abs(left_pips_order - diff) > 100:
+                    price_order = 0
+                    pow = 0
+                    time_live = 0
+                    left_pips_order = 0
+                close_levels.append([symbol, price_level,type_level,round(diff,2),
+                                 price_order,pow,round(time_live,1),round(left_pips_order,2)])
+
+        close_levels = sorted(close_levels, key=lambda x: x[3])
+
     except Exception as e:
         print(e)
     
     
-    return JsonResponse({'positions':positions, 'orders':good_orders})
+    return JsonResponse({'close_levels':close_levels, 'orders':good_orders})
 
 from screener.services import get_currency_chart_with_impulse
 

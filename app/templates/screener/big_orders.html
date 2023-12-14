@@ -4,39 +4,14 @@
 {% endblock title %}
 {% block content %}
     
-    <h1 style ='text-align:center'>Position</h1>
-    <div class="table-responsive">
-        <table id="tblPositions"
-           class="table mt-2 table-bordered table-striped table-hover table-responsive">
-        <thead class="table-dark">
-            <tr>
-                <th style="text-align:center;" width="10%">Name</th>
-                <th style="text-align:center;">Type</th>
-                <th style="text-align:center">Price Open</th>
-                <th style="text-align:center">Date Open</th>
-                <th style="text-align:center">Side</th>
-                <th style="text-align:center">Quantity</th>
-                <th style="text-align:center">Stop</th>
-                <th style="text-align:center">Left Pips Stop</th>
-                <th style="text-align:center">Take</th>
-                <th style="text-align:center">Left Pips Take</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
-    </div>
-    
     <h1 style ='text-align:center'>Close Levels Spot</h1>
     <div class="table-responsive">
                 <table id="tblCloseLevels_S"
                        class="table mt-2 table-bordered table-striped table-hover table-responsive">
                     <thead class="table-dark">
                         <tr>
-                            <th style="text-align:center;" width="10%">Name</th>
                             <th style='text-align:center' width="10%">Binance</th>
                             <th style="text-align:center">Price</th>
-                            <th style="text-align:center">Type</th>
                             <th style="text-align:center">Left pips</th>
                             <th style="text-align:center">Price Order S</th>
                             <th style="text-align:center">Pow S</th>
@@ -76,7 +51,6 @@
                     success: function(response) {
                         
                         $('#tblCloseLevels_S tbody').empty();
-                        $('#tblPositions tbody').empty();
                         $('#tblOrders_S tbody').empty();
     
                         try{
@@ -90,19 +64,15 @@
                                 {
                                     tr = $(`<tr class="table-danger">`);
                                 }
-                                tr.append(`<td><a style="color:black; text-align: center" href="/screener/${level[0]}/order_book">
-                                    <p style='font-size:18px'>${level[0]}</p>
-                                </a></td>`);
                                 tr.append(`<td>
                                     <p style='font-size:18px' onclick=" window.open('https://www.binance.com/ru/trade/${level[0]}');">${level[0]}</p>
                                 </td>`);
                                 tr.append(`<td>${level[1]}</td>`);
-                                tr.append(`<td>${level[2]}</td>`);
-                                tr.append(`<td>${level[3]}</td>`);
+                                tr.append(`<td>${level[3]} %</td>`);
                                 tr.append(`<td>${level[4]}</td>`);
                                 tr.append(`<td>${level[5]}</td>`);
-                                tr.append(`<td>${level[6]}</td>`);
-                                tr.append(`<td>${level[7]}</td>`);
+                                tr.append(`<td>${level[6]} min</td>`);
+                                tr.append(`<td>${level[7]} %</td>`);
                                 tr.append(`</tr>`)
                                 $('#tblCloseLevels_S').append(tr); 
                             });
