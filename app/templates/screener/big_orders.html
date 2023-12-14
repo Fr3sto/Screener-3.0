@@ -69,10 +69,23 @@
                                 </td>`);
                                 tr.append(`<td>${level[1]}</td>`);
                                 tr.append(`<td>${level[3]} %</td>`);
-                                tr.append(`<td>${level[4]}</td>`);
-                                tr.append(`<td>${level[5]}</td>`);
-                                tr.append(`<td>${level[6]} min</td>`);
-                                tr.append(`<td>${level[7]} %</td>`);
+                                if (level[4] == 0)
+                                {
+                                    tr.append(`<td>-</td>`);
+                                    tr.append(`<td>-</td>`);
+                                    tr.append(`<td>-</td>`);
+                                    tr.append(`<td>-</td>`);
+                                }
+                                else
+                                {
+                                    tr.append(`<td>${level[4]}</td>`);
+                                    tr.append(`<td>${level[5]}</td>`);
+                                    tr.append(`<td>${level[6]} min</td>`);
+                                    tr.append(`<td>${level[7]} %</td>`);
+                                }
+                                
+                                
+                                
                                 tr.append(`</tr>`)
                                 $('#tblCloseLevels_S').append(tr); 
                             });

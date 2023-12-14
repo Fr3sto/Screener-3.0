@@ -1,10 +1,11 @@
-from sshtunnel import SSHTunnelForwarder #Run pip install sshtunnel
+
 import psycopg2
 
 
 # conn = psycopg2.connect(database='Screener', user='fr3sto', password='endorphin25',host='10.16.0.2', port=1234)
 # curs = conn.cursor()
 
+from sshtunnel import SSHTunnelForwarder #Run pip install sshtunnel
 server =  SSHTunnelForwarder(
     ('31.129.99.176', 22), #Remote server IP and SSH port
     ssh_username = "root",
