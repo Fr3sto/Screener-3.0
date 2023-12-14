@@ -116,6 +116,7 @@ def get_data(request):
         for index, value in enumerate(close_levels):
             my_list = list(close_levels[index])
             my_list[7] = round(my_list[7],2)
+            my_list[8] = str((datetime.now() - my_list[8])).split('.')[0]
             close_levels_result.append(my_list)
 
         close_levels_result = sorted(close_levels_result, key=lambda x: x[4])
