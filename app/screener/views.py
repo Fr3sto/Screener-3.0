@@ -96,6 +96,13 @@ def positions(request):
 def get_data_position(request):
     
     positions = get_all_positions()
+    result_positions = []
+
+    for pos in positions:
+        my_list = list(pos)
+        my_list[5] =  my_list[5].strftime("%d/%m/%Y, %H:%M:%S")
+        result_positions.append(my_list)
+
     deals = get_all_deals()
     result_deals = []
 
@@ -104,7 +111,7 @@ def get_data_position(request):
         my_list[5] =  my_list[5].strftime("%d/%m/%Y, %H:%M:%S")
         my_list[7] =  my_list[7].strftime("%d/%m/%Y, %H:%M:%S")
         result_deals.append(my_list)
-    return JsonResponse({'positions':positions, 'deals':result_deals})
+    return JsonResponse({'positions':result_positions, 'deals':result_deals})
 
 from screener.services import get_currency_chart_with_impulse
 
