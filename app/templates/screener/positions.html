@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}
+    Positions
+{% endblock title %}
+{% block content %}
+    <h1 style ='text-align:center'>Positions</h1>
+    <div class="table-responsive">
+        <table id="tblPositions"
+                class="table mt-2 table-bordered table-striped table-hover table-responsive">
+            <thead class="table-dark">
+                <tr>
+                    <th style='text-align:center' width="10%">Symbol</th>
+                    <th style="text-align:center">Side</th>
+                    <th style="text-align:center">Quantity</th>
+                    <th style="text-align:center">Price Open</th>
+                    <th style="text-align:center">Date Open</th>
+                    <th style="text-align:center">Stop</th>
+                    <th style="text-align:center">Left Pips Stop</th>
+                    <th style="text-align:center">Take</th>
+                    <th style="text-align:center">Left Pips Take</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <h1 style ='text-align:center'>Deals</h1>
+    <div class="table-responsive">
+        <table id="tblDeals"
+                class="table mt-2 table-bordered table-striped table-hover table-responsive">
+            <thead class="table-dark">
+                <tr>
+                    <th style='text-align:center' width="10%">Symbol</th>
+                    <th style="text-align:center">Side</th>
+                    <th style="text-align:center">Quantity</th>
+                    <th style="text-align:center">Price Open</th>
+                    <th style="text-align:center">Date Open</th>
+                    <th style="text-align:center">Price Close</th>
+                    <th style="text-align:center">Date Close</th>
+                    <th style="text-align:center">Profit</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <script>
+        $(document).ready(function(){
+            setInterval(function(){
+                $.ajax({
+                    type: 'GET',
+                    url : "/get_data_position",
+                    success: function(response) {
+                        
+                        $('#tblPositions tbody').empty();
+                        $('#tblDeals tbody').empty();
+    
+                        try{
+                            var tr;
+                            $.each(response.positions, function (index, position){
+                                tr = $(`<tr>`);
+                                tr.append(`<td>${position[1]}</td>`);
+                                tr.append(`<td>${position[2]}</td>`);
+                                tr.append(`<td>${position[3]}</td>`);
+                                tr.append(`<td>${position[4]}</td>`);
+                                tr.append(`<td>${position[5]}</td>`);
+                                tr.append(`<td>${position[6]}</td>`);
+                                tr.append(`<td>${position[7]}</td>`);
+                                tr.append(`<td>${position[8]}</td>`);
+                                tr.append(`<td>${position[9]}</td>`);
+                                tr.append(`</tr>`)
+                                $('#tblPositions').append(tr); 
+                            });
+
+                            $.each(response.deals, function (index, deal){
+                                if (deal[8] > 0)
+                                {
+                                    tr = $(`<tr class="table-success">`);
+                                } 
+                                else
+                                {
+                                    tr = $(`<tr class="table-danger">`);
+                                }
+                                tr.append(`<td>${deal[1]}</td>`);
+                                tr.append(`<td>${deal[2]}</td>`);
+                                tr.append(`<td>${deal[3]}</td>`);
+                                tr.append(`<td>${deal[4]}</td>`);
+                                tr.append(`<td>${deal[5]}</td>`);
+                                tr.append(`<td>${deal[6]}</td>`);
+                                tr.append(`<td>${deal[7]}</td>`);
+                                tr.append(`<td>${deal[8]}</td>`);
+                                tr.append(`</tr>`)
+                                $('#tblDeals').append(tr); 
+                            });
+
+
+                        }
+                        catch(err){
+                            console.log(err);
+                        }
+                    },
+                    error : function(response){
+                        
+                    }
+                });
+            },3000);
+        })
+    </script>
+{% endblock content %}

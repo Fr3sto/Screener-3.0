@@ -23,7 +23,7 @@ curs = conn.cursor()
 #     host=server.local_bind_host,
 #     port=server.local_bind_port)
 
-# curs = conn.cursor()
+curs = conn.cursor()
 
 # GET
 
@@ -35,7 +35,12 @@ def get_all_currency():
 def get_all_positions():
     curs.execute('SELECT * FROM Position')
     positions = curs.fetchall()
-    return positions 
+    return positions
+
+def get_all_deals():
+    curs.execute('SELECT * FROM Deals order by Date_Close desc')
+    result = curs.fetchall()
+    return result 
 
 def get_all_impulses():
     curs.execute('SELECT * FROM Impulse')

@@ -22,5 +22,6 @@ from screener import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('screener/', include('screener.urls')),
-    path('get_data', views.get_data, name='get_data')
+    path('get_data', views.get_data, name='get_data'),
+    path('get_data_position', views.get_data_position, name='get_data_position')
 ]

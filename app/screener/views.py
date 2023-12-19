@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 from screener.services import collect_all_data_for_screener
-from screener.database import  get_all_positions,get_all_currency, get_all_order_book, get_close_levels
+from screener.database import  get_all_positions,get_all_currency, get_all_order_book, get_close_levels, get_all_deals
 from screener.charts import get_order_book_chart
 
 from screener.exchange import get_last_prices, get_currencies
@@ -28,43 +28,6 @@ def big_orders(request):
 curr_list = get_currencies(100)
 
 def get_data(request):
-
-    # close_levels_list = get_close_levels()
-
-    # result_list = []
-    # for index, value in enumerate(close_levels_list):
-    #     my_list = list(close_levels_list[index])
-    #     symbol = my_list[1]
-    #     price_level = my_list[2]
-    #     type_level = my_list[3]
-    #     left_pips = my_list[4]
-    #     price_order_s = my_list[5]
-    #     pow_s = my_list[6]
-    #     time_live_s = my_list[7]
-
-    #     left_Pips_order_s = 0
-
-    #     if price_order_s > 1000000 or price_order_s == 0:
-    #         price_order_s = 0
-    #         pow_s = 0
-    #         time_live_s = 0
-    #     else:
-    #         time_live_s = str((datetime.now() - time_live_s)).split('.')[0]
-    #         left_Pips_order_s = 0
-    #         if type_level == 1:
-    #             currPrice = price_level - price_level * left_pips / 100
-    #             left_Pips_order_s = (price_order_s - currPrice) / (currPrice / 100)
-    #         else:
-    #             currPrice = price_level + price_level * left_pips / 100
-    #             left_Pips_order_s = (currPrice - price_order_s) / (currPrice / 100)
-    #         left_Pips_order_s = round(left_Pips_order_s,2)
-
-    #     result_list.append([symbol, price_level,type_level,left_pips,
-    #                             price_order_s,pow_s,time_live_s,left_Pips_order_s])
-    
-    
-    # result_list = sorted(result_list, key=lambda x: x[3])
-
     good_orders = []
     try:
         order_book_list = get_all_order_book()
@@ -115,8 +78,8 @@ def get_data(request):
 
         for index, value in enumerate(close_levels):
             my_list = list(close_levels[index])
-            my_list[7] = round(my_list[7],2)
-            my_list[8] = str((datetime.now() - my_list[8])).split('.')[0]
+            my_list[8] = round(my_list[8],2)
+            my_list[9] = str((datetime.now() - my_list[9])).split('.')[0]
             close_levels_result.append(my_list)
 
         close_levels_result = sorted(close_levels_result, key=lambda x: x[4])
@@ -126,6 +89,22 @@ def get_data(request):
     
     
     return JsonResponse({'close_levels':close_levels_result, 'orders':good_orders})
+
+def positions(request):
+    return render(request, 'screener/positions.html')
+
+def get_data_position(request):
+    
+    positions = get_all_positions()
+    deals = get_all_deals()
+    result_deals = []
+
+    for deal in deals:
+        my_list = list(deal)
+        my_list[5] =  my_list[5].strftime("%d/%m/%Y, %H:%M:%S")
+        my_list[7] =  my_list[7].strftime("%d/%m/%Y, %H:%M:%S")
+        result_deals.append(my_list)
+    return JsonResponse({'positions':positions, 'deals':result_deals})
 
 from screener.services import get_currency_chart_with_impulse
 
