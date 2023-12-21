@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 from screener.services import collect_all_data_for_screener
-from screener.database import  get_all_positions,get_all_currency, get_all_order_book, get_close_levels, get_all_deals
+from screener.database import  get_all_positions,get_all_currency, get_all_order_book, get_close_levels, get_all_deals, get_all_status_check
 from screener.charts import get_order_book_chart
 
 from screener.exchange import get_last_prices, get_currencies
@@ -89,6 +89,22 @@ def get_data(request):
     
     
     return JsonResponse({'close_levels':close_levels_result, 'orders':good_orders})
+
+def status_check(request):
+    return render(request, 'screener/status_check.html')
+
+def get_data_status(request):
+
+    status_check_list = get_all_status_check()
+
+    result_status = []
+
+    for status in status_check_list:
+        my_list = list(status)
+        my_list[3] =  my_list[3].strftime("%d/%m/%Y, %H:%M:%S")
+        result_status.append(my_list)
+
+    return JsonResponse({'status_list':result_status})
 
 def positions(request):
     return render(request, 'screener/positions.html')

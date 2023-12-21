@@ -23,9 +23,14 @@ curs = conn.cursor()
 #     host=server.local_bind_host,
 #     port=server.local_bind_port)
 
-curs = conn.cursor()
+# curs = conn.cursor()
 
 # GET
+
+def get_all_status_check():
+    curs.execute('SELECT * FROM Status_Service')
+    result = curs.fetchall()
+    return result 
 
 def get_all_currency():
     curs.execute('SELECT * FROM Currency order by Symbol')

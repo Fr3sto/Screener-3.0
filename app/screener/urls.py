@@ -9,4 +9,5 @@ urlpatterns = [
     path('<str:symbol>-<int:tf>', views.currency_chart, name='currency_chart'),
     path('big_orders', views.big_orders, name='big_orders'),
     path('positions', views.positions, name='positions'),
+    path('status_check', views.status_check, name='status_check')
 ]
