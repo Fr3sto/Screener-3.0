@@ -4,8 +4,8 @@ from datetime import datetime
 
 
 from screener.services import collect_all_data_for_screener
-from screener.database import  get_all_positions,get_all_currency, get_all_order_book, get_close_levels, get_all_deals, get_all_status_check
-from screener.charts import get_order_book_chart
+from screener.database import  get_all_positions,get_all_currency, get_all_order_book, get_close_levels, get_all_deals, get_all_status_check, get_deal_by_id
+from screener.charts import get_order_book_chart, get_chart_deal
 
 from screener.exchange import get_last_prices, get_currencies
 
@@ -128,6 +128,13 @@ def get_data_position(request):
         my_list[7] =  my_list[7].strftime("%d/%m/%Y, %H:%M:%S")
         result_deals.append(my_list)
     return JsonResponse({'positions':result_positions, 'deals':result_deals})
+
+def current_deal(request, id):
+    print(id)
+    deals = get_deal_by_id(id)
+    symbol = deals[0][1]
+    chart = get_chart_deal(deals[0])
+    return render(request, 'screener/current_deal.html', {'name':symbol,'chart':chart})
 
 from screener.services import get_currency_chart_with_impulse
 

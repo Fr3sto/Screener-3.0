@@ -82,7 +82,10 @@
                                 {
                                     tr = $(`<tr class="table-danger">`);
                                 }
-                                tr.append(`<td>${deal[1]}</td>`);
+                                
+                                tr.append(`<td><a href="/screener/positions/${deal[0]}">
+                                        ${deal[1]}
+                                    </a></td>`);
                                 tr.append(`<td>${deal[2]}</td>`);
                                 tr.append(`<td>${deal[3]}</td>`);
                                 tr.append(`<td>${deal[4]}</td>`);

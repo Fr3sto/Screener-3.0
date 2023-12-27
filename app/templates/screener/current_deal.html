@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}
+    Chart
+{% endblock title %}
+{% block content %}
+    <h1 style='text-align:center'>{{name}} 5 min</h1>
+    {{ chart|safe }}
+{% endblock content %}

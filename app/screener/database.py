@@ -27,6 +27,11 @@ curs = conn.cursor()
 
 # GET
 
+def get_deal_by_id(id):
+    curs.execute('SELECT * FROM Deals where id = %s',(id,))
+    result = curs.fetchall()
+    return result 
+
 def get_all_status_check():
     curs.execute('SELECT * FROM Status_Service')
     result = curs.fetchall()
