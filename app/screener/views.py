@@ -72,17 +72,17 @@ def get_data(request):
         good_orders = sorted(good_orders, key=lambda x: x[5])
 
 
-        close_levels = get_close_levels()
+        # close_levels = get_close_levels()
 
         close_levels_result = []
 
-        for index, value in enumerate(close_levels):
-            my_list = list(close_levels[index])
-            my_list[8] = round(my_list[8],2)
-            my_list[9] = str((datetime.now() - my_list[9])).split('.')[0]
-            close_levels_result.append(my_list)
+        # for index, value in enumerate(close_levels):
+        #     my_list = list(close_levels[index])
+        #     my_list[8] = round(my_list[8],2)
+        #     my_list[9] = str((datetime.now() - my_list[9])).split('.')[0]
+        #     close_levels_result.append(my_list)
 
-        close_levels_result = sorted(close_levels_result, key=lambda x: x[4])
+        # close_levels_result = sorted(close_levels_result, key=lambda x: x[4])
 
     except Exception as e:
         print(e)
