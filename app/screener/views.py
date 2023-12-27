@@ -5,7 +5,7 @@ from datetime import datetime
 
 from screener.services import collect_all_data_for_screener
 from screener.database import  get_all_positions,get_all_currency, get_all_order_book, get_close_levels, get_all_deals, get_all_status_check, get_deal_by_id
-from screener.charts import get_order_book_chart, get_chart_deal
+from screener.charts import get_order_book_chart, get_chart_deal, get_chart_deal_5
 
 from screener.exchange import get_last_prices, get_currencies
 
@@ -134,7 +134,8 @@ def current_deal(request, id):
     deals = get_deal_by_id(id)
     symbol = deals[0][1]
     chart = get_chart_deal(deals[0])
-    return render(request, 'screener/current_deal.html', {'name':symbol,'chart':chart})
+    chart_2 = get_chart_deal_5(deals[0])
+    return render(request, 'screener/current_deal.html', {'name':symbol,'chart':chart, 'chart2':chart_2})
 
 from screener.services import get_currency_chart_with_impulse
 
