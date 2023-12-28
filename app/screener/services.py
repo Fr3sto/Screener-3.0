@@ -1,8 +1,8 @@
 import pandas as pd
 
-from screener.database import get_all_currency, get_all_impulses, get_all_order_book
+from screener.database import get_all_currency, get_all_impulses, get_all_order_book_s, get_all_order_book_f
 from screener.charts import get_chart_with_impulse
-from screener.exchange import get_last_prices
+from screener.exchange import get_last_prices_s
 
 def collect_all_data_for_screener(currency_list):
     
@@ -15,21 +15,35 @@ def collect_all_data_for_screener(currency_list):
     
     impulse_list =  get_all_impulses()
 
-    order_book_list = get_all_order_book()
+    order_book_list_s = get_all_order_book_s()
     
-    order_book = dict()
+    order_book_s = dict()
 
     for key,value in currency_list.items():
-        order_book[key] = []
+        order_book_s[key] = []
 
-    for order in order_book_list:
+    for order in order_book_list_s:
         symbol = order[1]
         type = order[2]
         price = order[3]
         is_not_mm = order[6]
-        order_book[symbol].append((price,is_not_mm))
+        order_book_s[symbol].append((price,is_not_mm))
 
-    last_prices = get_last_prices()
+    order_book_list_f = get_all_order_book_f()
+    
+    order_book_f = dict()
+
+    for key,value in currency_list.items():
+        order_book_f[key] = []
+
+    for order in order_book_list_f:
+        symbol = order[1]
+        type = order[2]
+        price = order[3]
+        is_not_mm = order[6]
+        order_book_f[symbol].append((price,is_not_mm))
+
+    last_prices = get_last_prices_s()
 
     result = dict()
 
@@ -64,7 +78,17 @@ def collect_all_data_for_screener(currency_list):
         left_pips_list = []
         left_pips_order = 0
         if not symbol in orders_prices_symbol:
-            for price, is_not_mm in order_book[symbol]:
+            for price, is_not_mm in order_book_s[symbol]:
+                order_count_decimal = str(round(price / currency_list[symbol]['min_step_spot']))
+                if price < up_price and price > down_price and is_not_mm == True and order_count_decimal[-1] == '0':
+                    count_orders += 1
+                    if price > last_price:
+                        left_pips_order = round(100 - last_price / price * 100,2)
+                    else:
+                        left_pips_order = round(100 - price / last_price * 100,2)
+                    left_pips_list.append(left_pips_order)
+
+            for price, is_not_mm in order_book_f[symbol]:
                 order_count_decimal = str(round(price / currency_list[symbol]['min_step']))
                 if price < up_price and price > down_price and is_not_mm == True and order_count_decimal[-1] == '0':
                     count_orders += 1

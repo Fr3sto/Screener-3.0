@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import pandas as pd
 from datetime import timedelta, datetime
 
-from screener.database import get_candles_by_symbol, get_order_book_by_symbol, get_candles_by_symbol_tf
+from screener.database import get_candles_by_symbol, get_order_book_by_symbol_s, get_candles_by_symbol_tf, get_order_book_by_symbol_f, get_level_by_id
 
 def get_data_from_file(symbol):
     df_data = pd.read_csv("data/" + symbol + ".txt", sep=';', names=['Date','Level','Best_bid', 'Best_ask','Type'])
@@ -159,6 +159,38 @@ def get_chart_deal(deal):
 
     return fig.to_html()
 
+
+def get_chart_level(id):
+
+    level = get_level_by_id(id)
+    symbol = level[1]
+    price = level[3]
+    type = level[4]
+    date_start = level[5]
+
+    df = pd.DataFrame(get_candles_by_symbol_tf(symbol, 5), columns=['id','symbol','tf','Open','High','Low','Close','Volume','Date'])
+    df = df.drop(['id','symbol','tf'],axis=1)
+    df = df.sort_values(by=['Date'])
+
+    fig = go.Figure(data=[go.Candlestick(x=df['Date'],
+                                         open=df['Open'], high=df['High'],
+                                         low=df['Low'], close=df['Close'])])
+    
+    
+    fig.update_layout(xaxis_rangeslider_visible=False)
+
+    color = ''
+    if type == 1:
+        color = 'Red'
+    else:
+         color = 'Green'
+    fig.add_shape(type="line",
+                        x0=date_start, y0=price, x1=df['Date'].iloc[-1], y1=price,
+                        line=dict(color=color, width=3))
+
+    return fig.to_html()
+
+
 def get_chart_with_impulse(df, impulse, tf, symbol):
     #fig = px.line(df, x = 'Date', y = 'Close')
 
@@ -193,7 +225,8 @@ def get_chart_with_impulse(df, impulse, tf, symbol):
                           x0=impulse[5], y0=impulse[4], x1=dateEnd, y1=impulse[6],
                           line=dict(color=color))
 
-    order_book_list = get_order_book_by_symbol(symbol)
+    order_book_list_s = get_order_book_by_symbol_s(symbol)
+    order_book_list_f = get_order_book_by_symbol_f(symbol)
 
     up_price = 0
     down_price = 0
@@ -208,10 +241,16 @@ def get_chart_with_impulse(df, impulse, tf, symbol):
         down_price = impulse[6]
         down_price -= down_price * 0.01
 
-    for order in order_book_list:
+    for order in order_book_list_s:
         if order[3] < up_price and order[3] > down_price and order[6] == True:
                         fig.add_shape(type="line",
                                        x0=order[7], y0=order[3], x1=df['Date'].iloc[-1], y1=order[3],
                                       line=dict(color='Blue', width=3))
+    
+    for order in order_book_list_f:
+        if order[3] < up_price and order[3] > down_price and order[6] == True:
+                        fig.add_shape(type="line",
+                                       x0=order[7], y0=order[3], x1=df['Date'].iloc[-1], y1=order[3],
+                                      line=dict(color='Red', width=3))
 
     return fig.to_html()

@@ -8,6 +8,7 @@ urlpatterns = [
     path('<str:symbol>/order_book', views.order_book_chart, name='order_book_chart'),
     path('<str:symbol>-<int:tf>', views.currency_chart, name='currency_chart'),
     path('big_orders', views.big_orders, name='big_orders'),
+    path('level/<int:id>', views.current_level, name='current_level'),
     path('positions', views.positions, name='positions'),
     path('positions/<str:id>', views.current_deal, name='current_deal'),
     path('status_check', views.status_check, name='status_check')

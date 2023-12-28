@@ -2,28 +2,28 @@
 import psycopg2
 
 
-# conn = psycopg2.connect(database='Screener', user='fr3sto', password='endorphin25',host='10.16.0.2', port=1234)
-# curs = conn.cursor()
-
-from sshtunnel import SSHTunnelForwarder #Run pip install sshtunnel
-server =  SSHTunnelForwarder(
-    ('31.129.99.176', 22), #Remote server IP and SSH port
-    ssh_username = "root",
-    ssh_password = "Endorphin25)",
-    remote_bind_address=('localhost', 1234),
-    local_bind_address=('localhost', 1234)) #PostgreSQL server IP and sever port on remote machine
-        
-server.start() #start ssh sever
-print ('Server connected via SSH')
-    
-conn = psycopg2.connect(
-    dbname='Screener',
-    user = 'fr3sto',
-    password='endorphin25',
-    host=server.local_bind_host,
-    port=server.local_bind_port)
-
+conn = psycopg2.connect(database='Screener', user='fr3sto', password='endorphin25',host='10.16.0.2', port=1234)
 curs = conn.cursor()
+
+# from sshtunnel import SSHTunnelForwarder #Run pip install sshtunnel
+# server =  SSHTunnelForwarder(
+#     ('31.129.99.176', 22), #Remote server IP and SSH port
+#     ssh_username = "root",
+#     ssh_password = "Endorphin25)",
+#     remote_bind_address=('localhost', 1234),
+#     local_bind_address=('localhost', 1234)) #PostgreSQL server IP and sever port on remote machine
+        
+# server.start() #start ssh sever
+# print ('Server connected via SSH')
+    
+# conn = psycopg2.connect(
+#     dbname='Screener',
+#     user = 'fr3sto',
+#     password='endorphin25',
+#     host=server.local_bind_host,
+#     port=server.local_bind_port)
+
+# curs = conn.cursor()
 
 # GET
 
@@ -75,13 +75,23 @@ def get_candles_by_symbol_tf(symbol,tf):
     return candles
 
 
-def get_all_order_book():
-    curs.execute('SELECT * from order_book where extract(epoch from date_end - date_start) / 60 > 15')
+def get_all_order_book_s():
+    curs.execute('SELECT * from order_book where extract(epoch from date_end - date_start) / 60 > 30')
     order_book = curs.fetchall()
     return order_book
 
-def get_order_book_by_symbol(symbol):
-    curs.execute('SELECT * from order_book where extract(epoch from date_end - date_start) / 60 > 15 and Symbol = %s',(symbol,))
+def get_all_order_book_f():
+    curs.execute('SELECT * from order_book_f where extract(epoch from date_end - date_start) / 60 > 30')
+    order_book = curs.fetchall()
+    return order_book
+
+def get_order_book_by_symbol_s(symbol):
+    curs.execute('SELECT * from order_book where extract(epoch from date_end - date_start) / 60 > 30 and Symbol = %s',(symbol,))
+    order_book = curs.fetchall()
+    return order_book
+
+def get_order_book_by_symbol_f(symbol):
+    curs.execute('SELECT * from order_book_f where extract(epoch from date_end - date_start) / 60 > 30 and Symbol = %s',(symbol,))
     order_book = curs.fetchall()
     return order_book
 
@@ -90,6 +100,10 @@ def get_all_levels():
     levels = curs.fetchall()
     return levels
 
+def get_level_by_id(id):
+    curs.execute('SELECT * from Levels where id = %s',(id,))
+    levels = curs.fetchone()
+    return levels
 
 def get_close_levels():
     curs.execute('SELECT * from Close_Level')
