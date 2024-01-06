@@ -2,7 +2,9 @@ import plotly.graph_objects as go
 import pandas as pd
 from datetime import timedelta, datetime
 
-from screener.database import get_candles_by_symbol, get_order_book_by_symbol_s, get_candles_by_symbol_tf, get_order_book_by_symbol_f, get_level_by_id
+from screener.database import (get_candles_by_symbol, get_order_book_by_symbol_s, 
+                               get_candles_by_symbol_tf, get_order_book_by_symbol_f, get_level_by_id,
+                               get_all_levels)
 
 def get_data_from_file(symbol):
     df_data = pd.read_csv("data/" + symbol + ".txt", sep=';', names=['Date','Level','Best_bid', 'Best_ask','Type'])
@@ -56,7 +58,181 @@ def get_order_book_chart(symbol):
         print(symbol, e)
 
 
-def get_chart_deal_5(deal):
+def get_chart_close_level(levels_symbol):
+    
+    levels = get_all_levels()
+
+    levels_dict = dict()
+
+    for level in levels:
+        symbol = level[1]
+        if symbol != levels_symbol:
+            continue
+        price = level[3]
+        type = level[4]
+        date_start = level[5]
+
+        if not symbol in levels_dict:
+            levels_dict[symbol] = {1 : [], 2 : []}
+
+        levels_dict[symbol][type].append((price, date_start))
+
+        for symbol, type in levels_dict.items():
+            levels_1 = sorted(type[1], key=lambda x: x[0], reverse=True)
+
+            if len(levels_1) > 2:
+                for i in range(2, len(levels_1)):
+                    left_1 = abs(100 - levels_1[i][0] / levels_1[i - 1][0] * 100)
+                    left_2 = abs(100 - levels_1[i][0] / levels_1[i - 2][0] * 100)
+                    if left_1 < 0.3 and left_2 < 0.3:
+                        print(f"{symbol} Close levels Up {levels_1[i][0]} {levels_1[i - 1][0]} {levels_1[i - 2][0]}")
+                        df = pd.DataFrame(get_candles_by_symbol_tf(symbol, 5), columns=['id','symbol','tf','Open','High','Low','Close','Volume','Date'])
+                        df = df.drop(['id','symbol','tf'],axis=1)
+                        df = df.sort_values(by=['Date'])
+
+                        fig = go.Figure(data=[go.Candlestick(x=df['Date'],
+                                            open=df['Open'], high=df['High'],
+                                            low=df['Low'], close=df['Close'])])
+        
+                        fig.update_layout(xaxis_rangeslider_visible=False)
+
+                        fig.add_shape(type="line",
+                            x0=levels_1[i][1], y0=levels_1[i][0], x1=df['Date'].iloc[-1], y1=levels_1[i][0],
+                            line=dict(color='Red', width=3))
+                        
+                        fig.add_shape(type="line",
+                            x0=levels_1[i - 1][1], y0=levels_1[i - 1][0], x1=df['Date'].iloc[-1], y1=levels_1[i - 1][0],
+                            line=dict(color='Red', width=3))
+                        
+                        fig.add_shape(type="line",
+                            x0=levels_1[i - 2][1], y0=levels_1[i - 2][0], x1=df['Date'].iloc[-1], y1=levels_1[i - 2][0],
+                            line=dict(color='Red', width=3))
+
+                        return fig.to_html()
+
+
+            
+            levels_2 = sorted(type[2], key=lambda x: x[0], reverse=True)
+
+            if len(levels_2) > 2:
+                for i in range(2, len(levels_2)):
+                    left_1 = abs(100 - levels_2[i][0] / levels_2[i - 1][0] * 100)
+                    left_2 = abs(100 - levels_2[i][0] / levels_2[i - 2][0] * 100)
+                    if left_1 < 0.3 and left_2 < 0.3:
+                        print(f"{symbol} Close levels Down {levels_2[i][0]} {levels_2[i - 1][0]} {levels_2[i - 2][0]}")
+                        df = pd.DataFrame(get_candles_by_symbol_tf(symbol, 5), columns=['id','symbol','tf','Open','High','Low','Close','Volume','Date'])
+                        df = df.drop(['id','symbol','tf'],axis=1)
+                        df = df.sort_values(by=['Date'])
+
+                        fig = go.Figure(data=[go.Candlestick(x=df['Date'],
+                                            open=df['Open'], high=df['High'],
+                                            low=df['Low'], close=df['Close'])])
+        
+                        fig.update_layout(xaxis_rangeslider_visible=False)
+
+                        fig.add_shape(type="line",
+                            x0=levels_2[i][1], y0=levels_2[i][0], x1=df['Date'].iloc[-1], y1=levels_2[i][0],
+                            line=dict(color='Green', width=3))
+                        
+                        fig.add_shape(type="line",
+                            x0=levels_2[i - 1][1], y0=levels_2[i - 1][0], x1=df['Date'].iloc[-1], y1=levels_2[i - 1][0],
+                            line=dict(color='Green', width=3))
+                        
+                        fig.add_shape(type="line",
+                            x0=levels_2[i - 2][1], y0=levels_2[i - 2][0], x1=df['Date'].iloc[-1], y1=levels_2[i - 2][0],
+                            line=dict(color='Green', width=3))
+
+                        return fig.to_html()
+
+def get_chart_close_levels():
+
+
+    charts = []
+    levels = get_all_levels()
+
+    levels_dict = dict()
+
+    for level in levels:
+        symbol = level[1]
+        price = level[3]
+        type = level[4]
+        date_start = level[5]
+
+        if not symbol in levels_dict:
+            levels_dict[symbol] = {1 : [], 2 : []}
+
+        levels_dict[symbol][type].append((price, date_start))
+    
+    for symbol, type in levels_dict.items():
+        levels_1 = sorted(type[1], key=lambda x: x[0], reverse=True)
+
+        if len(levels_1) > 2:
+            for i in range(2, len(levels_1)):
+                left_1 = abs(100 - levels_1[i][0] / levels_1[i - 1][0] * 100)
+                left_2 = abs(100 - levels_1[i][0] / levels_1[i - 2][0] * 100)
+                if left_1 < 0.3 and left_2 < 0.3:
+                    print(f"{symbol} Close levels Up {levels_1[i][0]} {levels_1[i - 1][0]} {levels_1[i - 2][0]}")
+                    df = pd.DataFrame(get_candles_by_symbol_tf(symbol, 5), columns=['id','symbol','tf','Open','High','Low','Close','Volume','Date'])
+                    df = df.drop(['id','symbol','tf'],axis=1)
+                    df = df.sort_values(by=['Date'])
+
+                    fig = go.Figure(data=[go.Candlestick(x=df['Date'],
+                                         open=df['Open'], high=df['High'],
+                                         low=df['Low'], close=df['Close'])])
+    
+                    fig.update_layout(xaxis_rangeslider_visible=False)
+
+                    fig.add_shape(type="line",
+                        x0=levels_1[i][1], y0=levels_1[i][0], x1=df['Date'].iloc[-1], y1=levels_1[i][0],
+                        line=dict(color='Red', width=3))
+                    
+                    fig.add_shape(type="line",
+                        x0=levels_1[i - 1][1], y0=levels_1[i - 1][0], x1=df['Date'].iloc[-1], y1=levels_1[i - 1][0],
+                        line=dict(color='Red', width=3))
+                    
+                    fig.add_shape(type="line",
+                        x0=levels_1[i - 2][1], y0=levels_1[i - 2][0], x1=df['Date'].iloc[-1], y1=levels_1[i - 2][0],
+                        line=dict(color='Red', width=3))
+
+                    charts.append({'fig':fig.to_html(), 'symbol':symbol})
+
+        
+        levels_2 = sorted(type[2], key=lambda x: x[0], reverse=True)
+
+        if len(levels_2) > 2:
+            for i in range(2, len(levels_2)):
+                left_1 = abs(100 - levels_2[i][0] / levels_2[i - 1][0] * 100)
+                left_2 = abs(100 - levels_2[i][0] / levels_2[i - 2][0] * 100)
+                if left_1 < 0.3 and left_2 < 0.3:
+                    print(f"{symbol} Close levels Down {levels_2[i][0]} {levels_2[i - 1][0]} {levels_2[i - 2][0]}")
+                    df = pd.DataFrame(get_candles_by_symbol_tf(symbol, 5), columns=['id','symbol','tf','Open','High','Low','Close','Volume','Date'])
+                    df = df.drop(['id','symbol','tf'],axis=1)
+                    df = df.sort_values(by=['Date'])
+
+                    fig = go.Figure(data=[go.Candlestick(x=df['Date'],
+                                         open=df['Open'], high=df['High'],
+                                         low=df['Low'], close=df['Close'])])
+    
+                    fig.update_layout(xaxis_rangeslider_visible=False)
+
+                    fig.add_shape(type="line",
+                        x0=levels_2[i][1], y0=levels_2[i][0], x1=df['Date'].iloc[-1], y1=levels_2[i][0],
+                        line=dict(color='Green', width=3))
+                    
+                    fig.add_shape(type="line",
+                        x0=levels_2[i - 1][1], y0=levels_2[i - 1][0], x1=df['Date'].iloc[-1], y1=levels_2[i - 1][0],
+                        line=dict(color='Green', width=3))
+                    
+                    fig.add_shape(type="line",
+                        x0=levels_2[i - 2][1], y0=levels_2[i - 2][0], x1=df['Date'].iloc[-1], y1=levels_2[i - 2][0],
+                        line=dict(color='Green', width=3))
+
+                    charts.append({'fig':fig.to_html(), 'symbol':symbol})
+
+    return charts
+
+
+def get_chart_deal_zoom(deal):
     symbol = deal[1]
     side = deal[2]
     price_open = deal[4]
@@ -65,18 +241,24 @@ def get_chart_deal_5(deal):
     date_close = deal[7]
     comment = deal[9]
     split_lines = comment.split(';')
-    stop = split_lines[0]
-    time_live = float(split_lines[1])
-    type = split_lines[2]
-    price_start = split_lines[3]
-    date_start = split_lines[4]
-    price_end = split_lines[5]
-    date_end = split_lines[6]
-    tf = int(split_lines[7])
-    date_from_order = date_open - timedelta(minutes=time_live)
+    type = int(split_lines[0].split('=')[1])
+    price_level_1 = float(split_lines[1].split('=')[1])
+    date_level_1 = split_lines[2].split('=')[1]
+    price_level_2 = float(split_lines[3].split('=')[1])
+    date_level_2 = split_lines[4].split('=')[1]
+    price_level_3 = float(split_lines[5].split('=')[1])
+    date_level_3 = split_lines[6].split('=')[1]
     
-    date_from = date_open - timedelta(hours=3)
-    date_to = date_close + timedelta(hours=3)
+
+    date_level_1 = datetime.strptime(date_level_1, "%Y-%m-%d %H:%M:%S")
+    date_level_2 = datetime.strptime(date_level_2, "%Y-%m-%d %H:%M:%S")
+    date_level_3 = datetime.strptime(date_level_3, "%Y-%m-%d %H:%M:%S")
+
+    
+
+
+    date_from = date_open - timedelta(hours=1)
+    date_to = date_close + timedelta(hours=1)
     
     
     df = pd.DataFrame(get_candles_by_symbol_tf(symbol, 5), columns=['id','symbol','tf','Open','High','Low','Close','Volume','Date'])
@@ -92,10 +274,24 @@ def get_chart_deal_5(deal):
     fig.add_scatter(x = [date_open], y = [price_open], mode='markers', marker=dict(size=10, color="Green"))
     fig.add_scatter(x = [date_close], y = [price_close], mode='markers', marker=dict(size=10, color="Red"))
 
+    color = ''
+
+    if type == 1:
+        color = 'Red'
+    else:
+        color = 'Green'
     
     fig.add_shape(type="line",
-                        x0=date_from_order, y0=stop, x1=date_open, y1=stop,
-                        line=dict(color='Blue', width=3))
+                        x0=date_from, y0=price_level_1, x1=date_open, y1=price_level_1,
+                        line=dict(color=color, width=3))
+    
+    fig.add_shape(type="line",
+                        x0=date_from, y0=price_level_2, x1=date_open, y1=price_level_2,
+                        line=dict(color=color, width=3))
+    
+    fig.add_shape(type="line",
+                        x0=date_from, y0=price_level_3, x1=date_open, y1=price_level_3,
+                        line=dict(color=color, width=3))
 
     return fig.to_html()
 
@@ -110,26 +306,27 @@ def get_chart_deal(deal):
     date_close = deal[7]
     comment = deal[9]
     split_lines = comment.split(';')
-    stop = split_lines[0]
-    time_live = float(split_lines[1])
-    type = split_lines[2]
-    price_start = split_lines[3]
-    date_start = split_lines[4]
-    price_end = split_lines[5]
-    date_end = split_lines[6]
-    tf = int(split_lines[7])
+    type = int(split_lines[0].split('=')[1])
+    price_level_1 = float(split_lines[1].split('=')[1])
+    date_level_1 = split_lines[2].split('=')[1]
+    price_level_2 = float(split_lines[3].split('=')[1])
+    date_level_2 = split_lines[4].split('=')[1]
+    price_level_3 = float(split_lines[5].split('=')[1])
+    date_level_3 = split_lines[6].split('=')[1]
     
 
-    date_start = datetime.strptime(date_start, "%Y-%m-%d %H:%M:%S")
+    date_level_1 = datetime.strptime(date_level_1, "%Y-%m-%d %H:%M:%S")
+    date_level_2 = datetime.strptime(date_level_2, "%Y-%m-%d %H:%M:%S")
+    date_level_3 = datetime.strptime(date_level_3, "%Y-%m-%d %H:%M:%S")
 
     
 
 
-    date_from = date_start - timedelta(hours=3)
-    date_to = date_close + timedelta(hours=3)
+    date_from = date_level_3 - timedelta(hours=1)
+    date_to = date_close + timedelta(hours=1)
     
     
-    df = pd.DataFrame(get_candles_by_symbol_tf(symbol, tf), columns=['id','symbol','tf','Open','High','Low','Close','Volume','Date'])
+    df = pd.DataFrame(get_candles_by_symbol_tf(symbol, 5), columns=['id','symbol','tf','Open','High','Low','Close','Volume','Date'])
     df = df.drop(['id','symbol','tf'],axis=1)
     df = df.sort_values(by=['Date'])
     df = df[(df['Date'] > date_from) & (df['Date'] < date_to)]
@@ -142,20 +339,24 @@ def get_chart_deal(deal):
     fig.add_scatter(x = [date_open], y = [price_open], mode='markers', marker=dict(size=10, color="Green"))
     fig.add_scatter(x = [date_close], y = [price_close], mode='markers', marker=dict(size=10, color="Red"))
 
+    color = ''
 
+    if type == 1:
+        color = 'Red'
+    else:
+        color = 'Green'
     
-    color = 'Red'
-    if type == 'L':
-         color = 'Green'
-    fig.add_shape(type="rect",
-                          x0=date_start, y0=price_start, x1=date_end, y1=price_end,
-                          line=dict(color=color))
-    
-
-    date_from_order = date_open - timedelta(minutes=time_live)
     fig.add_shape(type="line",
-                        x0=date_from_order, y0=stop, x1=date_open, y1=stop,
-                        line=dict(color='Blue', width=3))
+                        x0=date_level_1, y0=price_level_1, x1=date_open, y1=price_level_1,
+                        line=dict(color=color, width=3))
+    
+    fig.add_shape(type="line",
+                        x0=date_level_2, y0=price_level_2, x1=date_open, y1=price_level_2,
+                        line=dict(color=color, width=3))
+    
+    fig.add_shape(type="line",
+                        x0=date_level_3, y0=price_level_3, x1=date_open, y1=price_level_3,
+                        line=dict(color=color, width=3))
 
     return fig.to_html()
 

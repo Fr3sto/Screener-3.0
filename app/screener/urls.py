@@ -11,5 +11,7 @@ urlpatterns = [
     path('level/<int:id>', views.current_level, name='current_level'),
     path('positions', views.positions, name='positions'),
     path('positions/<str:id>', views.current_deal, name='current_deal'),
-    path('status_check', views.status_check, name='status_check')
+    path('status_check', views.status_check, name='status_check'),
+    path('close_levels', views.chart_close_levels, name='chart_close_levels'),
+    path('close_level/<str:symbol>', views.chart_close_level, name='chart_close_level'),
 ]

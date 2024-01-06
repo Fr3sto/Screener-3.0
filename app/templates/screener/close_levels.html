@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}
+    Chart
+{% endblock title %}
+{% block content %}
+    {% for chart in charts %}
+        <h1 style='text-align:center'>{{ chart.symbol }}</h1>
+        {{ chart.fig|safe }}
+        <br>
+    {% endfor %}
+{% endblock content %}

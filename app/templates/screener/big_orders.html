@@ -4,15 +4,16 @@
 {% endblock title %}
 {% block content %}
     
-    <h1 style ='text-align:center'>Close Levels Spot</h1>
+    <h1 style ='text-align:center'>Close Levels Futures</h1>
     <div class="table-responsive">
                 <table id="tblCloseLevels_S"
                        class="table mt-2 table-bordered table-striped table-hover table-responsive">
                     <thead class="table-dark">
                         <tr>
                             <th style='text-align:center' width="10%">Binance</th>
-                            <th style="text-align:center">Price</th>
-                            <th style="text-align:center">Time Live</th>
+                            <th style="text-align:center">Price One</th>
+                            <th style="text-align:center">Price Two</th>
+                            <th style="text-align:center">Price Three</th>
                             <th style="text-align:center">Left pips</th>
                             {% comment %} <th style="text-align:center">Price Order S</th>
                             <th style="text-align:center">Pow S</th>
@@ -84,7 +85,7 @@
                             var tr;
                             $.each(response.close_levels, function (index, level){
                                 console.log(level)
-                                if (level[3] == 2)
+                                if (level[1] == 2)
                                 {
                                     tr = $(`<tr class="table-success">`);
                                 } 
@@ -92,13 +93,13 @@
                                 {
                                     tr = $(`<tr class="table-danger">`);
                                 }
-                                tr.append(`<td><a href="/screener/level/${level[0]}">
-                                    ${level[1]}
+                                tr.append(`<td><a href="/screener/close_level/${level[0]}">
+                                    ${level[0]}
                                 </a></td>`);
                                 tr.append(`<td>${level[2]}</td>`);
-                                tr.append(`<td>${level[4]} min</td>`);
+                                tr.append(`<td>${level[3]}</td>`);
+                                tr.append(`<td>${level[4]}</td>`);
                                 tr.append(`<td>${level[5]} %</td>`);
-                                
                                 
                                 
                                 tr.append(`</tr>`)
