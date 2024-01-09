@@ -222,6 +222,18 @@ def get_data_position(request):
             my_list = list(deal)
             my_list[5] =  my_list[5].strftime("%d/%m/%Y, %H:%M:%S")
             my_list[7] =  my_list[7].strftime("%d/%m/%Y, %H:%M:%S")
+
+            side = deal[2]
+            quantity = deal[3]
+            price_open = deal[4]
+            price_close = deal[6]
+
+            percent = 0
+            if side == 'LONG':
+                percent = round(100 - price_open / price_close * 100,2)
+            else:
+                percent = round(100 - price_close / price_open * 100,2)
+            my_list[8] = percent
             result_deals.append(my_list)
     except Exception as e:
         print(e)
