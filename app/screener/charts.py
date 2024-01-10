@@ -1,6 +1,7 @@
 import plotly.graph_objects as go
 import pandas as pd
 from datetime import timedelta, datetime
+import plotly.express as px
 
 from screener.database import (get_candles_by_symbol, get_order_book_by_symbol_s, 
                                get_candles_by_symbol_tf, get_order_book_by_symbol_f, get_level_by_id,
@@ -286,6 +287,33 @@ def get_chart_close_levels():
 
     return charts
 
+def get_chart_equity(deals):
+    
+    profits = []
+    sum_percent = 0
+    i = 1
+    for deal in reversed(deals):
+        profit = deal[8]
+        percent = round(profit / 5 * 100,2)
+        sum_percent += percent
+        profits.append((sum_percent, i))
+        i+=1
+    
+
+    colors=['red' if val[0] < 0 else 'green' for val in profits]
+    trace = go.Scatter(
+        x=[x[1] for x in profits], 
+        y=[x[0] for x in profits], 
+        mode='markers+lines', 
+        marker={'color': colors}, 
+        line={'color': 'gray'}
+    )
+
+    # crate figure, plot 
+    fig = go.Figure(data=trace)
+    # df = pd.DataFrame(profits, columns=['profit','id'])
+    # fig = px.line(df, x="id", y="profit", title='Equity of deals')
+    return fig.to_html()
 
 def get_chart_deal_zoom(deal):
     symbol = deal[1]

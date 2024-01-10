@@ -7,7 +7,9 @@ from screener.services import collect_all_data_for_screener
 from screener.database import  (get_all_positions,get_all_currency, get_all_order_book_s,
                                 get_all_order_book_f, get_close_levels, get_all_deals, 
                                 get_all_status_check, get_deal_by_id, get_all_levels)
-from screener.charts import get_order_book_chart, get_chart_deal, get_chart_deal_zoom, get_chart_level, get_chart_close_levels, get_chart_close_level
+from screener.charts import (get_order_book_chart, get_chart_deal,
+                              get_chart_deal_zoom, get_chart_level, get_chart_close_levels,
+                                get_chart_close_level, get_chart_equity)
 
 from screener.exchange import get_last_prices_s, get_last_prices_f, get_currencies
 
@@ -225,7 +227,9 @@ def get_data_status(request):
     return JsonResponse({'status_list':result_status})
 
 def positions(request):
-    return render(request, 'screener/positions.html')
+    deals = get_all_deals()
+    chart = get_chart_equity(deals)
+    return render(request, 'screener/positions.html', {'chart':chart})
 
 def get_data_position(request):
     result_positions = []
@@ -240,6 +244,7 @@ def get_data_position(request):
             result_positions.append(my_list)
 
         deals = get_all_deals()
+        
         
 
         for deal in deals:
