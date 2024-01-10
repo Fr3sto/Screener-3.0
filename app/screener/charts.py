@@ -301,13 +301,18 @@ def get_chart_deal_zoom(deal):
     date_level_1 = split_lines[2].split('=')[1]
     price_level_2 = float(split_lines[3].split('=')[1])
     date_level_2 = split_lines[4].split('=')[1]
-    price_level_3 = float(split_lines[5].split('=')[1])
-    date_level_3 = split_lines[6].split('=')[1]
+    price_level_3 = 0
+    date_level_3 = 0
+    if len(split_lines) > 5:
+        price_level_3 = float(split_lines[5].split('=')[1])
+        date_level_3 = split_lines[6].split('=')[1]
+    
     
 
     date_level_1 = datetime.strptime(date_level_1, "%Y-%m-%d %H:%M:%S")
     date_level_2 = datetime.strptime(date_level_2, "%Y-%m-%d %H:%M:%S")
-    date_level_3 = datetime.strptime(date_level_3, "%Y-%m-%d %H:%M:%S")
+    if len(split_lines) > 5:
+        date_level_3 = datetime.strptime(date_level_3, "%Y-%m-%d %H:%M:%S")
 
     
 
@@ -343,10 +348,10 @@ def get_chart_deal_zoom(deal):
     fig.add_shape(type="line",
                         x0=date_from, y0=price_level_2, x1=date_open, y1=price_level_2,
                         line=dict(color=color, width=3))
-    
-    fig.add_shape(type="line",
-                        x0=date_from, y0=price_level_3, x1=date_open, y1=price_level_3,
-                        line=dict(color=color, width=3))
+    if len(split_lines) > 5:
+        fig.add_shape(type="line",
+                            x0=date_from, y0=price_level_3, x1=date_open, y1=price_level_3,
+                            line=dict(color=color, width=3))
 
     return fig.to_html()
 
@@ -366,19 +371,26 @@ def get_chart_deal(deal):
     date_level_1 = split_lines[2].split('=')[1]
     price_level_2 = float(split_lines[3].split('=')[1])
     date_level_2 = split_lines[4].split('=')[1]
-    price_level_3 = float(split_lines[5].split('=')[1])
-    date_level_3 = split_lines[6].split('=')[1]
+    price_level_3 = 0
+    date_level_3 = 0
+    if len(split_lines) > 5:
+        price_level_3 = float(split_lines[5].split('=')[1])
+        date_level_3 = split_lines[6].split('=')[1]
     
 
     date_level_1 = datetime.strptime(date_level_1, "%Y-%m-%d %H:%M:%S")
     date_level_2 = datetime.strptime(date_level_2, "%Y-%m-%d %H:%M:%S")
-    date_level_3 = datetime.strptime(date_level_3, "%Y-%m-%d %H:%M:%S")
+    if len(split_lines) > 5:
+        date_level_3 = datetime.strptime(date_level_3, "%Y-%m-%d %H:%M:%S")
 
     
 
     date_from = 0
     if type == 1:
-        date_from = date_level_3 - timedelta(hours=1)
+        if len(split_lines) > 5:
+            date_from = date_level_3 - timedelta(hours=1)
+        else:
+            date_from = date_level_2 - timedelta(hours=1)
     else:
         date_from = date_level_1 - timedelta(hours=1)
     date_to = date_close + timedelta(hours=1)
@@ -412,9 +424,10 @@ def get_chart_deal(deal):
                         x0=date_level_2, y0=price_level_2, x1=date_open, y1=price_level_2,
                         line=dict(color=color, width=3))
     
-    fig.add_shape(type="line",
-                        x0=date_level_3, y0=price_level_3, x1=date_open, y1=price_level_3,
-                        line=dict(color=color, width=3))
+    if len(split_lines) > 5:
+        fig.add_shape(type="line",
+                            x0=date_level_3, y0=price_level_3, x1=date_open, y1=price_level_3,
+                            line=dict(color=color, width=3))
 
     return fig.to_html()
 

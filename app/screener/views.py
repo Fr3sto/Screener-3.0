@@ -46,8 +46,8 @@ def get_data(request):
         order_book_list = get_all_order_book_s()
         order_book = dict()
 
-        for currency in currency_list:
-            order_book[currency[1]] = {'bids':dict(),'asks':dict()}
+        for symbol, currency in curr_list.items():
+            order_book[symbol] = {'bids':dict(),'asks':dict()}
 
 
         for order in order_book_list:
@@ -90,8 +90,8 @@ def get_data(request):
         order_book_list = get_all_order_book_f()
         order_book = dict()
 
-        for currency in currency_list:
-            order_book[currency[1]] = {'bids':dict(),'asks':dict()}
+        for symbol, currency in curr_list.items():
+            order_book[symbol] = {'bids':dict(),'asks':dict()}
 
 
         for order in order_book_list:
