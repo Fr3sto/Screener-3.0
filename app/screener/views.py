@@ -33,8 +33,8 @@ def chart_close_levels(request):
     charts = get_chart_close_levels()
     return render(request, 'screener/close_levels.html', {'charts':charts})
 
-def chart_close_level(request, symbol):
-    chart = get_chart_close_level(symbol)
+def chart_close_level(request, symbol, level):
+    chart = get_chart_close_level(symbol, level)
     return render(request, 'screener/close_level.html', {'chart':chart, 'name':symbol})
 
 
@@ -144,35 +144,59 @@ def get_data(request):
 
             levels_dict[symbol][type].append((price, date_start))
         
+        # for symbol, type in levels_dict.items():
+        #     levels_1 = sorted(type[1], key=lambda x: x[0], reverse=True)
+
+        #     if len(levels_1) > 2:
+        #         for i in range(2, len(levels_1)):
+        #             left_1 = 100 - levels_1[i][0] / levels_1[i - 1][0] * 100
+        #             left_2 = 100 - levels_1[i][0] / levels_1[i - 2][0] * 100
+        #             if left_1 < 0.3 and left_2 < 0.3:
+        #                 #print(f"{symbol} Close levels Up {levels_1[i][0]} {levels_1[i - 1][0]} {levels_1[i - 2][0]}")
+        #                 best_ask = last_prices[symbol]['best_ask']
+        #                 left_pips = round(100 - best_ask / levels_1[i][0] * 100, 2)
+        #                 close_levels_result.append((symbol, 1, levels_1[i][0], levels_1[i -1][0], levels_1[i - 2][0], left_pips))
+                    
+
+            
+        #     levels_2 = sorted(type[2], key=lambda x: x[0], reverse=True)
+
+        #     if len(levels_2) > 2:
+        #         for i in range(2, len(levels_2)):
+        #             left_1 = 100 - levels_2[i][0] / levels_2[i - 1][0] * 100
+        #             left_2 = 100 - levels_2[i][0] / levels_2[i - 2][0] * 100
+        #             if left_1 < 0.3 and left_2 < 0.3:
+        #                 #print(f"{symbol} Close levels Down {levels_2[i][0]} {levels_2[i - 1][0]} {levels_2[i - 2][0]}")
+        #                 best_bid = last_prices[symbol]['best_bid']
+        #                 left_pips = round(100 - levels_2[i - 2][0] / best_bid * 100, 2)
+        #                 close_levels_result.append((symbol, 2, levels_2[i][0], levels_2[i -1][0], levels_2[i - 2][0], left_pips))
         for symbol, type in levels_dict.items():
             levels_1 = sorted(type[1], key=lambda x: x[0], reverse=True)
 
-            if len(levels_1) > 2:
-                for i in range(2, len(levels_1)):
+            if len(levels_1) > 1:
+                for i in range(1, len(levels_1)):
                     left_1 = 100 - levels_1[i][0] / levels_1[i - 1][0] * 100
-                    left_2 = 100 - levels_1[i][0] / levels_1[i - 2][0] * 100
-                    if left_1 < 0.3 and left_2 < 0.3:
+                    if left_1 < 0.3:
                         #print(f"{symbol} Close levels Up {levels_1[i][0]} {levels_1[i - 1][0]} {levels_1[i - 2][0]}")
                         best_ask = last_prices[symbol]['best_ask']
                         left_pips = round(100 - best_ask / levels_1[i][0] * 100, 2)
-                        close_levels_result.append((symbol, 1, levels_1[i][0], levels_1[i -1][0], levels_1[i - 2][0], left_pips))
+                        close_levels_result.append((symbol, 1, levels_1[i][0], levels_1[i -1][0], left_pips))
                     
 
             
             levels_2 = sorted(type[2], key=lambda x: x[0], reverse=True)
 
-            if len(levels_2) > 2:
-                for i in range(2, len(levels_2)):
+            if len(levels_2) > 1:
+                for i in range(1, len(levels_2)):
                     left_1 = 100 - levels_2[i][0] / levels_2[i - 1][0] * 100
-                    left_2 = 100 - levels_2[i][0] / levels_2[i - 2][0] * 100
-                    if left_1 < 0.3 and left_2 < 0.3:
+                    if left_1 < 0.3:
                         #print(f"{symbol} Close levels Down {levels_2[i][0]} {levels_2[i - 1][0]} {levels_2[i - 2][0]}")
                         best_bid = last_prices[symbol]['best_bid']
-                        left_pips = round(100 - levels_2[i - 2][0] / best_bid * 100, 2)
-                        close_levels_result.append((symbol, 2, levels_2[i][0], levels_2[i -1][0], levels_2[i - 2][0], left_pips))
+                        left_pips = round(100 - levels_2[i - 1][0] / best_bid * 100, 2)
+                        close_levels_result.append((symbol, 2, levels_2[i - 1][0], levels_2[i][0] , left_pips))
                     
 
-        close_levels_result = sorted(close_levels_result, key=lambda x: x[5])
+        close_levels_result = sorted(close_levels_result, key=lambda x: x[4])
 
     except Exception as e:
         print(e)
@@ -227,12 +251,9 @@ def get_data_position(request):
             quantity = deal[3]
             price_open = deal[4]
             price_close = deal[6]
+            profit = deal[8]
 
-            percent = 0
-            if side == 'LONG':
-                percent = round(100 - price_open / price_close * 100,2)
-            else:
-                percent = round(100 - price_close / price_open * 100,2)
+            percent = round(profit / 5 * 100,2)
             my_list[8] = percent
             result_deals.append(my_list)
     except Exception as e:

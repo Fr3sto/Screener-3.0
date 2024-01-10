@@ -1,6 +1,8 @@
 from django.contrib import admin
-from django.urls import path, include
-from . import views
+from django.urls import path, include, register_converter
+from . import views, converters
+
+register_converter(converters.FloatUrlParameterConverter, 'float')
 
 app_name = 'screener'
 urlpatterns = [
@@ -13,5 +15,5 @@ urlpatterns = [
     path('positions/<str:id>', views.current_deal, name='current_deal'),
     path('status_check', views.status_check, name='status_check'),
     path('close_levels', views.chart_close_levels, name='chart_close_levels'),
-    path('close_level/<str:symbol>', views.chart_close_level, name='chart_close_level'),
+    path('close_level/<str:symbol>/<float:level>', views.chart_close_level, name='chart_close_level'),
 ]
