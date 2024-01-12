@@ -72,25 +72,7 @@ def get_all_deals():
     postgreSQL_pool.putconn(connection)
     return result
 
-def get_all_impulses():
-    connection = postgreSQL_pool.getconn()
-    cursor = connection.cursor()
-    cursor.execute('SELECT * FROM Impulse')
-    result = cursor.fetchall()
-    cursor.close()
-    postgreSQL_pool.putconn(connection)
-    return result
-
         
-def get_impulse_opened(symbol, tf):
-    connection = postgreSQL_pool.getconn()
-    cursor = connection.cursor()
-    cursor.execute('SELECT * FROM Impulse Where Symbol = %s and TF = %s', (symbol, tf))
-    result = cursor.fetchall()
-    cursor.close()
-    postgreSQL_pool.putconn(connection)
-    return result
-    
 
 def get_candles_by_symbol(symbol):
     connection = postgreSQL_pool.getconn()
@@ -105,43 +87,6 @@ def get_candles_by_symbol_tf(symbol,tf):
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
     cursor.execute('SELECT * FROM Candles where Symbol = %s and TF = %s',(symbol,tf))
-    result = cursor.fetchall()
-    cursor.close()
-    postgreSQL_pool.putconn(connection)
-    return result
-
-
-def get_all_order_book_s():
-    connection = postgreSQL_pool.getconn()
-    cursor = connection.cursor()
-    cursor.execute('SELECT * from order_book where extract(epoch from date_end - date_start) / 60 > 15')
-    result = cursor.fetchall()
-    cursor.close()
-    postgreSQL_pool.putconn(connection)
-    return result
-
-def get_all_order_book_f():
-    connection = postgreSQL_pool.getconn()
-    cursor = connection.cursor()
-    cursor.execute('SELECT * from order_book_f where extract(epoch from date_end - date_start) / 60 > 15')
-    result = cursor.fetchall()
-    cursor.close()
-    postgreSQL_pool.putconn(connection)
-    return result
-
-def get_order_book_by_symbol_s(symbol):
-    connection = postgreSQL_pool.getconn()
-    cursor = connection.cursor()
-    cursor.execute('SELECT * from order_book where extract(epoch from date_end - date_start) / 60 > 15 and Symbol = %s',(symbol,))
-    result = cursor.fetchall()
-    cursor.close()
-    postgreSQL_pool.putconn(connection)
-    return result
-
-def get_order_book_by_symbol_f(symbol):
-    connection = postgreSQL_pool.getconn()
-    cursor = connection.cursor()
-    cursor.execute('SELECT * from order_book_f where extract(epoch from date_end - date_start) / 60 > 15 and Symbol = %s',(symbol,))
     result = cursor.fetchall()
     cursor.close()
     postgreSQL_pool.putconn(connection)

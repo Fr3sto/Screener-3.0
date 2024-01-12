@@ -40,14 +40,6 @@ def get_currencies(upper_limit : int):
 
     return currency_list
 
-def get_last_prices_s():
-    url = "https://api.binance.com/api/v3/ticker/bookTicker"
-    data = requests.get(url).json()
-    result = dict()
-    for value in data:
-        result[value['symbol']] = {'best_bid':float(value['bidPrice']),'best_ask':float(value['askPrice'])}
-    
-    return result
 
 def get_last_prices_f():
     url = "https://fapi.binance.com/fapi/v1/ticker/bookTicker"

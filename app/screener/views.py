@@ -3,134 +3,24 @@ from django.http import JsonResponse
 from datetime import datetime
 
 
-from screener.services import collect_all_data_for_screener
-from screener.database import  (get_all_positions,get_all_currency, get_all_order_book_s,
-                                get_all_order_book_f, get_close_levels, get_all_deals, 
-                                get_all_status_check, get_deal_by_id, get_all_levels)
-from screener.charts import (get_order_book_chart, get_chart_deal,
-                              get_chart_deal_zoom, get_chart_level, get_chart_close_levels,
+from screener.database import  (get_all_positions,get_all_currency,
+                                 get_close_levels, get_all_deals, 
+                                 get_deal_by_id, get_all_levels, get_all_status_check)
+from screener.charts import ( get_chart_deal,
+                              get_chart_deal_zoom, get_chart_close_levels,
                                 get_chart_close_level, get_chart_equity)
 
-from screener.exchange import get_last_prices_s, get_last_prices_f, get_currencies
+from screener.exchange import  get_last_prices_f, get_currencies
 
 currency_list = get_all_currency()
 
 def index(request):
-
-    try:
-        print('Good')
-        data = collect_all_data_for_screener(curr_list)
-        list_tf = [5,15,30,60]
-
-        return render(request, 'screener/index.html', {'data':data, 'list_tf':list_tf})
-    except Exception as e:
-        print(e)
-
-def big_orders(request):
-    return render(request, 'screener/big_orders.html')
-
-curr_list = get_currencies(100)
-
-def chart_close_levels(request):
-    charts = get_chart_close_levels()
-    return render(request, 'screener/close_levels.html', {'charts':charts})
-
-def chart_close_level(request, symbol, level):
-    chart = get_chart_close_level(symbol, level)
-    return render(request, 'screener/close_level.html', {'chart':chart, 'name':symbol})
-
+    return render(request, 'screener/close_levels.html')
 
 def get_data(request):
-    good_orders_s = []
-    good_orders_f = []
     close_levels_result = []
+    last_prices = get_last_prices_f()
     try:
-        order_book_list = get_all_order_book_s()
-        order_book = dict()
-
-        for symbol, currency in curr_list.items():
-            order_book[symbol] = {'bids':dict(),'asks':dict()}
-
-
-        for order in order_book_list:
-            symbol = order[1]
-            type = order[2]
-            price = order[3]
-            pow = order[4]
-            quantity = order[5]
-            is_not_mm = order[6]
-            date_start = order[7]
-            date_end = order[8]
-            order_book[symbol][type][price] = {'date_start':date_start, 'date_end':date_end, 'pow':pow,
-                                            'is_not_mm':is_not_mm, 'quantity':quantity}
-
-
-        
-        last_prices = get_last_prices_s()
-        for symbol, types in order_book.items():
-            best_bid = last_prices[symbol]['best_bid']
-            best_ask = last_prices[symbol]['best_ask']
-
-            if symbol == 'TRXUSDT':
-                pass
-            for type, orders in types.items():
-                for price, order in orders.items():
-                    order_count_decimal = str(round(price / curr_list[symbol]['min_step_spot']))
-                    
-                    if order_count_decimal[-1] == '0':
-                        if type == 'asks':
-                            left_pips_order = 100 - best_ask / price * 100
-                        else:
-                            left_pips_order = 100 - price / best_bid * 100
-
-                        time_live = round((order['date_end'] - order['date_start']).seconds / 60)
-                        if left_pips_order <= 3 and order['is_not_mm'] == True:
-                            good_orders_s.append([symbol, type, price, order['pow'],time_live, round(left_pips_order,2)])
-        good_orders_s = sorted(good_orders_s, key=lambda x: x[5])
-
-
-        order_book_list = get_all_order_book_f()
-        order_book = dict()
-
-        for symbol, currency in curr_list.items():
-            order_book[symbol] = {'bids':dict(),'asks':dict()}
-
-
-        for order in order_book_list:
-            symbol = order[1]
-            type = order[2]
-            price = order[3]
-            pow = order[4]
-            quantity = order[5]
-            is_not_mm = order[6]
-            date_start = order[7]
-            date_end = order[8]
-            order_book[symbol][type][price] = {'date_start':date_start, 'date_end':date_end, 'pow':pow,
-                                            'is_not_mm':is_not_mm, 'quantity':quantity}
-
-
-        
-        last_prices = get_last_prices_f()
-        for symbol, types in order_book.items():
-            best_bid = last_prices[symbol]['best_bid']
-            best_ask = last_prices[symbol]['best_ask']
-
-            for type, orders in types.items():
-                for price, order in orders.items():
-                    order_count_decimal = str(round(price / curr_list[symbol]['min_step']))
-                    
-                    if order_count_decimal[-1] == '0':
-                        if type == 'asks':
-                            left_pips_order = 100 - best_ask / price * 100
-                        else:
-                            left_pips_order = 100 - price / best_bid * 100
-                            
-                        time_live = round((order['date_end'] - order['date_start']).seconds / 60)
-                        if left_pips_order <= 3 and order['is_not_mm'] == True:
-                            good_orders_f.append([symbol, type, price, order['pow'],time_live, round(left_pips_order,2)])
-        good_orders_f = sorted(good_orders_f, key=lambda x: x[5])
-
-
         levels = get_all_levels()
 
         levels_dict = dict()
@@ -146,69 +36,49 @@ def get_data(request):
 
             levels_dict[symbol][type].append((price, date_start))
         
-        # for symbol, type in levels_dict.items():
-        #     levels_1 = sorted(type[1], key=lambda x: x[0], reverse=True)
-
-        #     if len(levels_1) > 2:
-        #         for i in range(2, len(levels_1)):
-        #             left_1 = 100 - levels_1[i][0] / levels_1[i - 1][0] * 100
-        #             left_2 = 100 - levels_1[i][0] / levels_1[i - 2][0] * 100
-        #             if left_1 < 0.3 and left_2 < 0.3:
-        #                 #print(f"{symbol} Close levels Up {levels_1[i][0]} {levels_1[i - 1][0]} {levels_1[i - 2][0]}")
-        #                 best_ask = last_prices[symbol]['best_ask']
-        #                 left_pips = round(100 - best_ask / levels_1[i][0] * 100, 2)
-        #                 close_levels_result.append((symbol, 1, levels_1[i][0], levels_1[i -1][0], levels_1[i - 2][0], left_pips))
-                    
-
-            
-        #     levels_2 = sorted(type[2], key=lambda x: x[0], reverse=True)
-
-        #     if len(levels_2) > 2:
-        #         for i in range(2, len(levels_2)):
-        #             left_1 = 100 - levels_2[i][0] / levels_2[i - 1][0] * 100
-        #             left_2 = 100 - levels_2[i][0] / levels_2[i - 2][0] * 100
-        #             if left_1 < 0.3 and left_2 < 0.3:
-        #                 #print(f"{symbol} Close levels Down {levels_2[i][0]} {levels_2[i - 1][0]} {levels_2[i - 2][0]}")
-        #                 best_bid = last_prices[symbol]['best_bid']
-        #                 left_pips = round(100 - levels_2[i - 2][0] / best_bid * 100, 2)
-        #                 close_levels_result.append((symbol, 2, levels_2[i][0], levels_2[i -1][0], levels_2[i - 2][0], left_pips))
         for symbol, type in levels_dict.items():
             levels_1 = sorted(type[1], key=lambda x: x[0], reverse=True)
 
-            if len(levels_1) > 1:
-                for i in range(1, len(levels_1)):
+            if len(levels_1) > 2:
+                for i in range(2, len(levels_1)):
                     left_1 = 100 - levels_1[i][0] / levels_1[i - 1][0] * 100
-                    if left_1 < 0.3:
+                    left_2 = 100 - levels_1[i][0] / levels_1[i - 2][0] * 100
+                    if left_1 < 0.3 and left_2 < 0.3:
                         #print(f"{symbol} Close levels Up {levels_1[i][0]} {levels_1[i - 1][0]} {levels_1[i - 2][0]}")
                         best_ask = last_prices[symbol]['best_ask']
                         left_pips = round(100 - best_ask / levels_1[i][0] * 100, 2)
-                        close_levels_result.append((symbol, 1, levels_1[i][0], levels_1[i -1][0], left_pips))
+                        close_levels_result.append((symbol, 1, levels_1[i][0], levels_1[i -1][0], levels_1[i - 2][0], left_pips))
                     
 
             
             levels_2 = sorted(type[2], key=lambda x: x[0], reverse=True)
 
-            if len(levels_2) > 1:
-                for i in range(1, len(levels_2)):
+            if len(levels_2) > 2:
+                for i in range(2, len(levels_2)):
                     left_1 = 100 - levels_2[i][0] / levels_2[i - 1][0] * 100
-                    if left_1 < 0.3:
+                    left_2 = 100 - levels_2[i][0] / levels_2[i - 2][0] * 100
+                    if left_1 < 0.3 and left_2 < 0.3:
                         #print(f"{symbol} Close levels Down {levels_2[i][0]} {levels_2[i - 1][0]} {levels_2[i - 2][0]}")
                         best_bid = last_prices[symbol]['best_bid']
-                        left_pips = round(100 - levels_2[i - 1][0] / best_bid * 100, 2)
-                        close_levels_result.append((symbol, 2, levels_2[i - 1][0], levels_2[i][0] , left_pips))
+                        left_pips = round(100 - levels_2[i - 2][0] / best_bid * 100, 2)
+                        close_levels_result.append((symbol, 2, levels_2[i][0], levels_2[i -1][0], levels_2[i - 2][0], left_pips))
                     
 
-        close_levels_result = sorted(close_levels_result, key=lambda x: x[4])
+        close_levels_result = sorted(close_levels_result, key=lambda x: x[5])
 
     except Exception as e:
         print(e)
     
     
-    return JsonResponse({'close_levels':close_levels_result, 'orders_s':good_orders_s, 'orders_f':good_orders_f})
+    return JsonResponse({'close_levels':close_levels_result})
 
-def current_level(request, id):
-    chart = get_chart_level(id)
-    return render(request, 'screener/current_level.html', {'chart':chart})
+
+curr_list = get_currencies(100)
+
+def chart_close_level(request, symbol, level):
+    chart = get_chart_close_level(symbol, level)
+    return render(request, 'screener/close_level.html', {'chart':chart, 'name':symbol})
+
 
 def status_check(request):
     return render(request, 'screener/status_check.html')
@@ -229,7 +99,35 @@ def get_data_status(request):
 def positions(request):
     deals = get_all_deals()
     chart = get_chart_equity(deals)
-    return render(request, 'screener/positions.html', {'chart':chart})
+    
+    sum_profit = 0
+    good_deals = 0
+    bad_deals = 0
+    for deal in deals:
+        side = deal[2]
+        quantity = deal[3]
+        price_open = deal[4]
+        price_close = deal[6]
+        profit = deal[8]
+
+        if profit > 0:
+            profit += price_open * quantity * 0.00025
+            profit += price_close * quantity * 0.00025
+
+        percent = round(profit / 5 * 100,2)
+        sum_profit += percent
+
+        if percent > 0:
+            good_deals += 1
+        
+        if percent < -0.1:
+            bad_deals += 1
+    
+    percent_good = 0
+    if len(deals) > 1:
+        percent_good = good_deals / (good_deals + bad_deals) * 100
+
+    return render(request, 'screener/positions.html', {'chart':chart,'all_profit':round(sum_profit,2),'count_deals':good_deals + bad_deals, 'percent_good':round(percent_good, 2)})
 
 def get_data_position(request):
     result_positions = []
@@ -272,35 +170,4 @@ def current_deal(request, id):
     chart = get_chart_deal(deals[0])
     chart_2 = get_chart_deal_zoom(deals[0])
     return render(request, 'screener/current_deal.html', {'name':symbol,'chart':chart, 'chart_2':chart_2})
-
-
-
-from screener.services import get_currency_chart_with_impulse
-
-def currency_chart(request, symbol, tf):
-    print(symbol, tf)
-    chart = get_currency_chart_with_impulse(symbol,tf)
-    return render(request, 'screener/currency_chart.html', {'chart':chart})
-
-
-import os
-def order_book_chart(request, symbol):
-    charts = []
-
-    files = os.listdir("signal_order/")
-    done = 0
-    for file in files:
-        try:
-            name = file.split('.')[0]
-            chart = get_order_book_chart(name)
-            charts.append(chart)
-            done += 1
-            print(f"{done}/{len(files)}")
-        except Exception as e:
-            print(e)
-    #charts.append(get_order_book_chart(symbol))
-    
-    return render(request, 'screener/order_book_chart.html', {'charts' : charts})
-
-
 
