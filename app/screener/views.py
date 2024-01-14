@@ -8,75 +8,26 @@ from screener.database import  (get_all_positions,get_all_currency,
                                  get_deal_by_id, get_all_levels, get_all_status_check)
 from screener.charts import ( get_chart_deal,
                               get_chart_deal_zoom, get_chart_close_levels,
-                                get_chart_close_level, get_chart_equity)
+                                get_chart_three_close_level,get_chart_two_close_level, get_chart_equity)
 
-from screener.exchange import  get_last_prices_f, get_currencies
+from screener.exchange import  get_last_prices_f
 
-currency_list = get_all_currency()
+from screener.services import get_close_three_levels, get_close_two_levels
 
 def index(request):
-    return render(request, 'screener/close_levels.html')
+    return render(request, 'screener/close_three_levels.html')
 
 def get_data(request):
-    close_levels_result = []
-    last_prices = get_last_prices_f()
-    try:
-        levels = get_all_levels()
-
-        levels_dict = dict()
-
-        for level in levels:
-            symbol = level[1]
-            price = level[3]
-            type = level[4]
-            date_start = level[5]
-
-            if not symbol in levels_dict:
-                levels_dict[symbol] = {1 : [], 2 : []}
-
-            levels_dict[symbol][type].append((price, date_start))
-        
-        for symbol, type in levels_dict.items():
-            levels_1 = sorted(type[1], key=lambda x: x[0], reverse=True)
-
-            if len(levels_1) > 2:
-                for i in range(2, len(levels_1)):
-                    left_1 = 100 - levels_1[i][0] / levels_1[i - 1][0] * 100
-                    left_2 = 100 - levels_1[i][0] / levels_1[i - 2][0] * 100
-                    if left_1 < 0.3 and left_2 < 0.3:
-                        #print(f"{symbol} Close levels Up {levels_1[i][0]} {levels_1[i - 1][0]} {levels_1[i - 2][0]}")
-                        best_ask = last_prices[symbol]['best_ask']
-                        left_pips = round(100 - best_ask / levels_1[i][0] * 100, 2)
-                        close_levels_result.append((symbol, 1, levels_1[i][0], levels_1[i -1][0], levels_1[i - 2][0], left_pips))
-                    
-
-            
-            levels_2 = sorted(type[2], key=lambda x: x[0], reverse=True)
-
-            if len(levels_2) > 2:
-                for i in range(2, len(levels_2)):
-                    left_1 = 100 - levels_2[i][0] / levels_2[i - 1][0] * 100
-                    left_2 = 100 - levels_2[i][0] / levels_2[i - 2][0] * 100
-                    if left_1 < 0.3 and left_2 < 0.3:
-                        #print(f"{symbol} Close levels Down {levels_2[i][0]} {levels_2[i - 1][0]} {levels_2[i - 2][0]}")
-                        best_bid = last_prices[symbol]['best_bid']
-                        left_pips = round(100 - levels_2[i - 2][0] / best_bid * 100, 2)
-                        close_levels_result.append((symbol, 2, levels_2[i][0], levels_2[i -1][0], levels_2[i - 2][0], left_pips))
-                    
-
-        close_levels_result = sorted(close_levels_result, key=lambda x: x[5])
-
-    except Exception as e:
-        print(e)
+    close_levels_result = get_close_three_levels()
     
     
     return JsonResponse({'close_levels':close_levels_result})
 
 
-curr_list = get_currencies(100)
+curr_list = get_all_currency()
 
 def chart_close_level(request, symbol, level):
-    chart = get_chart_close_level(symbol, level)
+    chart = get_chart_three_close_level(symbol, level)
     return render(request, 'screener/close_level.html', {'chart':chart, 'name':symbol})
 
 

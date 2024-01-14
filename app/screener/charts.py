@@ -8,7 +8,7 @@ from screener.database import (get_candles_by_symbol,
                                get_all_levels)
 
 
-def get_chart_close_level(levels_symbol, level_price):
+def get_chart_three_close_level(levels_symbol, level_price):
     
     levels = get_all_levels()
 
@@ -95,6 +95,87 @@ def get_chart_close_level(levels_symbol, level_price):
                             line=dict(color='Green', width=3))
 
                         return fig.to_html()
+
+def get_chart_two_close_level(levels_symbol, level_price):
+    
+    levels = get_all_levels()
+
+    levels_dict = dict()
+
+    for level in levels:
+        symbol = level[1]
+        if symbol != levels_symbol:
+            continue
+        price = level[3]
+        type = level[4]
+        date_start = level[5]
+
+        if not symbol in levels_dict:
+            levels_dict[symbol] = {1 : [], 2 : []}
+
+        levels_dict[symbol][type].append((price, date_start))
+
+    for symbol, type in levels_dict.items():
+        levels_1 = sorted(type[1], key=lambda x: x[0], reverse=True)
+
+        if len(levels_1) > 1:
+            for i in range(1, len(levels_1)):
+                if levels_1[i][0] == level_price:
+                    left_1 = abs(100 - levels_1[i][0] / levels_1[i - 1][0] * 100)
+                    if left_1 < 0.3:
+                        print(f"{symbol} Close levels Up {levels_1[i][0]} {levels_1[i - 1][0]}")
+                        df = pd.DataFrame(get_candles_by_symbol_tf(symbol, 5), columns=['id','symbol','tf','Open','High','Low','Close','Volume','Date'])
+                        df = df.drop(['id','symbol','tf'],axis=1)
+                        df = df.sort_values(by=['Date'])
+
+                        fig = go.Figure(data=[go.Candlestick(x=df['Date'],
+                                            open=df['Open'], high=df['High'],
+                                            low=df['Low'], close=df['Close'])])
+        
+                        fig.update_layout(xaxis_rangeslider_visible=False)
+
+                        fig.add_shape(type="line",
+                            x0=levels_1[i][1], y0=levels_1[i][0], x1=df['Date'].iloc[-1], y1=levels_1[i][0],
+                            line=dict(color='Red', width=3))
+                        
+                        fig.add_shape(type="line",
+                            x0=levels_1[i - 1][1], y0=levels_1[i - 1][0], x1=df['Date'].iloc[-1], y1=levels_1[i - 1][0],
+                            line=dict(color='Red', width=3))
+            
+
+                        return fig.to_html()
+
+
+            
+        levels_2 = sorted(type[2], key=lambda x: x[0], reverse=True)
+
+        if len(levels_2) > 1:
+            for i in range(1, len(levels_2)):
+                if levels_2[i][0] == level_price:
+                    left_1 = abs(100 - levels_2[i][0] / levels_2[i - 1][0] * 100)
+                    if left_1 < 0.3:
+                        print(f"{symbol} Close levels Down {levels_2[i][0]} {levels_2[i - 1][0]}")
+                        df = pd.DataFrame(get_candles_by_symbol_tf(symbol, 5), columns=['id','symbol','tf','Open','High','Low','Close','Volume','Date'])
+                        df = df.drop(['id','symbol','tf'],axis=1)
+                        df = df.sort_values(by=['Date'])
+
+                        fig = go.Figure(data=[go.Candlestick(x=df['Date'],
+                                            open=df['Open'], high=df['High'],
+                                            low=df['Low'], close=df['Close'])])
+        
+                        fig.update_layout(xaxis_rangeslider_visible=False)
+
+                        fig.add_shape(type="line",
+                            x0=levels_2[i][1], y0=levels_2[i][0], x1=df['Date'].iloc[-1], y1=levels_2[i][0],
+                            line=dict(color='Green', width=3))
+                        
+                        fig.add_shape(type="line",
+                            x0=levels_2[i - 1][1], y0=levels_2[i - 1][0], x1=df['Date'].iloc[-1], y1=levels_2[i - 1][0],
+                            line=dict(color='Green', width=3))
+
+                        return fig.to_html()
+
+
 
 def get_chart_close_levels():
 

@@ -27,6 +27,20 @@ postgreSQL_pool = pool.ThreadedConnectionPool(1, 100, user="fr3sto",
 
 # GET
 
+def get_all_currency():
+    connection = postgreSQL_pool.getconn()
+    cursor = connection.cursor()
+    cursor.execute('SELECT * FROM Currency')
+    result = cursor.fetchall()
+    cursor.close()
+    postgreSQL_pool.putconn(connection)
+
+    currency_dict = dict()
+
+    for curr in result:
+        currency_dict[curr[1]] = {'min_step':curr[2], 'min_qty':curr[3], 'price_scale':curr[4]}
+    return currency_dict
+
 def get_deal_by_id(id):
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
