@@ -8,7 +8,8 @@ from screener.database import  (get_all_positions,get_all_currency,
                                  get_deal_by_id, get_all_levels, get_all_status_check)
 from screener.charts import ( get_chart_deal,
                               get_chart_deal_zoom, get_chart_close_levels,
-                                get_chart_three_close_level,get_chart_two_close_level, get_chart_equity)
+                                get_chart_three_close_level,get_chart_two_close_level, get_chart_equity,
+                                get_chart_current_position)
 
 from screener.exchange import  get_last_prices_f
 
@@ -113,6 +114,10 @@ def get_data_position(request):
     except Exception as e:
         print(e)
     return JsonResponse({'positions':result_positions, 'deals':result_deals})
+
+def current_position(request, symbol):
+    chart = get_chart_current_position(symbol)
+    return render(request, 'screener/close_level.html', {'chart':chart, 'name':symbol})
 
 def current_deal(request, id):
     print(id)

@@ -5,7 +5,7 @@ import plotly.express as px
 
 from screener.database import (get_candles_by_symbol, 
                                get_candles_by_symbol_tf, get_level_by_id,
-                               get_all_levels)
+                               get_all_levels, get_position_by_symbol)
 
 
 def get_chart_three_close_level(levels_symbol, level_price):
@@ -95,6 +95,86 @@ def get_chart_three_close_level(levels_symbol, level_price):
                             line=dict(color='Green', width=3))
 
                         return fig.to_html()
+
+
+def get_chart_current_position(symbol):
+
+    position = get_position_by_symbol(symbol)
+
+    price_open = position[0][4]
+    date_open = position[0][5]
+
+    stop = position[0][6]
+    tp = position[0][8]
+
+    comment = position[0][11]
+    split_lines = comment.split(';')
+    type = int(split_lines[0].split('=')[1])
+    price_level_1 = float(split_lines[1].split('=')[1])
+    date_level_1 = split_lines[2].split('=')[1]
+    price_level_2 = float(split_lines[3].split('=')[1])
+    date_level_2 = split_lines[4].split('=')[1]
+    price_level_3 = 0
+    date_level_3 = 0
+    if len(split_lines) > 5:
+        price_level_3 = float(split_lines[5].split('=')[1])
+        date_level_3 = split_lines[6].split('=')[1]
+    
+    
+
+    date_level_1 = datetime.strptime(date_level_1, "%Y-%m-%d %H:%M:%S")
+    date_level_2 = datetime.strptime(date_level_2, "%Y-%m-%d %H:%M:%S")
+    if len(split_lines) > 5:
+        date_level_3 = datetime.strptime(date_level_3, "%Y-%m-%d %H:%M:%S")
+
+
+    date_from = date_level_2 - timedelta(hours=1)
+    
+    
+    df = pd.DataFrame(get_candles_by_symbol_tf(symbol, 5), columns=['id','symbol','tf','Open','High','Low','Close','Volume','Date'])
+    df = df.drop(['id','symbol','tf'],axis=1)
+    df = df.sort_values(by=['Date'])
+    df = df[(df['Date'] > date_from)]
+    fig = go.Figure(data=[go.Candlestick(x=df['Date'],
+                                         open=df['Open'], high=df['High'],
+                                         low=df['Low'], close=df['Close'])])
+    
+    fig.update_layout(xaxis_rangeslider_visible=False)
+
+    fig.add_scatter(x = [date_open], y = [price_open], mode='markers', marker=dict(size=10, color="Green"))
+
+    #stop
+    fig.add_shape(type="line",
+                        x0=date_open, y0=stop, x1=df['Date'].iloc[-1], y1=stop,
+                        line=dict(color='Red', width=1))
+    
+    fig.add_shape(type="line",
+                        x0=date_open, y0=tp, x1=df['Date'].iloc[-1], y1=tp,
+                        line=dict(color='Green', width=1))
+
+
+    color = ''
+
+    if type == 1:
+        color = 'Red'
+    else:
+        color = 'Green'
+    
+    fig.add_shape(type="line",
+                        x0=date_level_1, y0=price_level_1, x1=date_open, y1=price_level_1,
+                        line=dict(color=color, width=3))
+    
+    fig.add_shape(type="line",
+                        x0=date_level_2, y0=price_level_2, x1=date_open, y1=price_level_2,
+                        line=dict(color=color, width=3))
+    if len(split_lines) > 5:
+        fig.add_shape(type="line",
+                            x0=date_from, y0=price_level_3, x1=date_open, y1=price_level_3,
+                            line=dict(color=color, width=3))
+
+    return fig.to_html()
+
+
 
 def get_chart_two_close_level(levels_symbol, level_price):
     

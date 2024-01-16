@@ -67,7 +67,9 @@
                             var tr;
                             $.each(response.positions, function (index, position){
                                 tr = $(`<tr>`);
-                                tr.append(`<td>${position[1]}</td>`);
+                                    tr.append(`<td><a href="/screener/position/${position[1]}">
+                                        ${position[1]}
+                                    </a></td>`);
                                 tr.append(`<td>${position[2]}</td>`);
                                 tr.append(`<td>${position[3]}</td>`);
                                 tr.append(`<td>${position[4]}</td>`);

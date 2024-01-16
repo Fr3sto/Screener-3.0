@@ -85,7 +85,7 @@ def get_close_two_levels():
             for i in range(1, len(levels_1)):
                 left_1 = 100 - levels_1[i][0] / levels_1[i - 1][0] * 100
                 time_delta = (now - levels_1[i-1][1]).seconds / 60
-                if left_1 < 0.3 and time_delta > 1000:
+                if left_1 < 0.3:
                     #print(f"{symbol} Close levels Up {levels_1[i][0]} {levels_1[i - 1][0]} {levels_1[i - 2][0]}")
                     best_ask = last_prices[symbol]['best_ask']
                     left_pips = round(100 - best_ask / levels_1[i][0] * 100, 2)
@@ -99,7 +99,7 @@ def get_close_two_levels():
             for i in range(1, len(levels_2)):
                 left_1 = 100 - levels_2[i][0] / levels_2[i - 1][0] * 100
                 time_delta = (now - levels_2[i][1]).seconds / 60
-                if left_1 < 0.3 and time_delta > 1000:
+                if left_1 < 0.3:
                     #print(f"{symbol} Close levels Down {levels_2[i][0]} {levels_2[i - 1][0]} {levels_2[i - 2][0]}")
                     best_bid = last_prices[symbol]['best_bid']
                     left_pips = round(100 - levels_2[i - 1][0] / best_bid * 100, 2)

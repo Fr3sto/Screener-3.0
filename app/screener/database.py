@@ -1,4 +1,3 @@
-
 from psycopg2 import pool
 
 
@@ -40,6 +39,15 @@ def get_all_currency():
     for curr in result:
         currency_dict[curr[1]] = {'min_step':curr[2], 'min_qty':curr[3], 'price_scale':curr[4]}
     return currency_dict
+
+def get_position_by_symbol(symbol):
+    connection = postgreSQL_pool.getconn()
+    cursor = connection.cursor()
+    cursor.execute('SELECT * FROM Position where Symbol = %s',(symbol,))
+    result = cursor.fetchall()
+    cursor.close()
+    postgreSQL_pool.putconn(connection)
+    return result
 
 def get_deal_by_id(id):
     connection = postgreSQL_pool.getconn()
