@@ -16,10 +16,10 @@ from screener.exchange import  get_last_prices_f
 from screener.services import get_close_three_levels, get_close_two_levels
 
 def index(request):
-    return render(request, 'screener/close_two_levels.html')
+    return render(request, 'screener/close_three_levels.html')
 
 def get_data(request):
-    close_levels_result = get_close_two_levels()
+    close_levels_result = get_close_three_levels()
     
     
     return JsonResponse({'close_levels':close_levels_result})
@@ -28,7 +28,7 @@ def get_data(request):
 curr_list = get_all_currency()
 
 def chart_close_level(request, symbol, level):
-    chart = get_chart_two_close_level(symbol, level)
+    chart = get_chart_three_close_level(symbol, level)
     return render(request, 'screener/close_level.html', {'chart':chart, 'name':symbol})
 
 

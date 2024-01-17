@@ -473,11 +473,11 @@ def get_chart_deal(deal):
     date_from = 0
     if type == 1:
         if len(split_lines) > 5:
-            date_from = date_level_3 - timedelta(hours=1)
+            date_from = date_level_3 - timedelta(hours=20)
         else:
-            date_from = date_level_2 - timedelta(hours=1)
+            date_from = date_level_2 - timedelta(hours=20)
     else:
-        date_from = date_level_1 - timedelta(hours=1)
+        date_from = date_level_1 - timedelta(hours=20)
     date_to = date_close + timedelta(hours=8)
     
     
