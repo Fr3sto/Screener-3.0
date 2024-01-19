@@ -24,5 +24,6 @@ urlpatterns = [
     path('screener/', include('screener.urls')),
     path('get_data', views.get_data, name='get_data'),
     path('get_data_position', views.get_data_position, name='get_data_position'),
-    path('get_data_status', views.get_data_status, name='get_data_status')
+    path('get_data_status', views.get_data_status, name='get_data_status'),
+    path('get_data_order_book', views.get_data_order_book, name='get_data_order_book')
 ]

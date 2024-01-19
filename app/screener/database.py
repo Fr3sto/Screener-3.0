@@ -58,6 +58,15 @@ def get_deal_by_id(id):
     postgreSQL_pool.putconn(connection)
     return result
 
+def get_all_order_book_f():
+    connection = postgreSQL_pool.getconn()
+    cursor = connection.cursor()
+    cursor.execute('SELECT * from order_book_f where extract(epoch from date_end - date_start) / 60 > 5')
+    result = cursor.fetchall()
+    cursor.close()
+    postgreSQL_pool.putconn(connection)
+    return result
+
 def get_all_status_check():
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
@@ -67,14 +76,6 @@ def get_all_status_check():
     postgreSQL_pool.putconn(connection)
     return result
 
-def get_all_currency():
-    connection = postgreSQL_pool.getconn()
-    cursor = connection.cursor()
-    cursor.execute('SELECT * FROM Currency order by Symbol')
-    result = cursor.fetchall()
-    cursor.close()
-    postgreSQL_pool.putconn(connection)
-    return result
 
 def get_all_positions():
     connection = postgreSQL_pool.getconn()

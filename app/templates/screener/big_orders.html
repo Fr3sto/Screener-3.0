@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}
+    Order Book
+{% endblock title %}
+{% block content %}
+    
+    <h1 style ='text-align:center'>Levels With Order</h1>
+    <div class="table-responsive">
+    <table id="tblOrderLevel"
+        class="table mt-2 table-bordered table-striped table-hover table-responsive">
+        <thead class="table-dark">
+            <tr>
+                <th style="text-align:center;" width="10%">Name</th>
+                <th style="text-align:center">Price Level</th>
+                <th style="text-align:center">Time Live</th>
+                <th style="text-align:center">Left Pips</th>
+                <th style="text-align:center">Price Order</th>
+                <th style="text-align:center">Pow</th>
+                <th style="text-align:center">Time Live</th>
+                <th style="text-align:center">Left Pips Order</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    </div>
+
+    <h1 style ='text-align:center'>Orders Futures</h1>
+    <div class="table-responsive">
+    <table id="tblOrders_F"
+        class="table mt-2 table-bordered table-striped table-hover table-responsive">
+        <thead class="table-dark">
+            <tr>
+                <th style="text-align:center;" width="10%">Name</th>
+                <th style="text-align:center;">Type</th>
+                <th style="text-align:center">Price</th>
+                <th style="text-align:center">Pow</th>
+                <th style="text-align:center">Time live</th>
+                <th style="text-align:center">Left Pips</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    </div>
+            
+    <script>
+        $(document).ready(function(){
+            setInterval(function(){
+                $.ajax({
+                    type: 'GET',
+                    url : "/get_data_order_book",
+                    success: function(response) {
+                        
+                        $('#tblOrders_F tbody').empty();
+                        $('#tblOrderLevel tbody').empty();
+    
+                        try{
+                            var tr;
+                            
+                            $.each(response.orders_f, function (index, order){
+                                if (order[1] == 'bids')
+                                {
+                                    tr = $(`<tr class="table-success">`);
+                                } 
+                                else
+                                {
+                                    tr = $(`<tr class="table-danger">`);
+                                }
+                                tr.append(`<td>${order[0]}</td>`);
+                                tr.append(`<td>${order[1]}</td>`);
+                                tr.append(`<td>${order[2]}</td>`);
+                                tr.append(`<td>${order[3]}</td>`);
+                                tr.append(`<td>${order[4]} minute</td>`);
+                                tr.append(`<td>${order[5]} %</td>`);
+                                tr.append(`</tr>`)
+                                $('#tblOrders_F').append(tr); 
+                            });
+
+                            $.each(response.close_levels, function (index, level){
+                                if (level[0] == 2)
+                                {
+                                    tr = $(`<tr class="table-success">`);
+                                } 
+                                else
+                                {
+                                    tr = $(`<tr class="table-danger">`);
+                                }
+                                tr.append(`<td>${level[1]}</td>`);
+                                tr.append(`<td>${level[2]}</td>`);
+                                tr.append(`<td>${level[3]} min</td>`);
+                                tr.append(`<td>${level[4]} %</td>`);
+                                tr.append(`<td>${level[5]}</td>`);
+                                tr.append(`<td>${level[6]}</td>`);
+                                tr.append(`<td>${level[7]} min</td>`);
+                                tr.append(`<td>${level[8]} %</td>`);
+                                tr.append(`</tr>`)
+                                $('#tblOrderLevel').append(tr); 
+                            });
+                            
+
+
+                        }
+                        catch(err){
+                            console.log(err);
+                        }
+                    },
+                    error : function(response){
+                        
+                    }
+                });
+            },3000);
+        })
+    </script>
+{% endblock content %}
