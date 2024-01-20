@@ -24,25 +24,49 @@
         </tbody>
     </table>
     </div>
-
-    <h1 style ='text-align:center'>Orders Futures</h1>
-    <div class="table-responsive">
-    <table id="tblOrders_F"
-        class="table mt-2 table-bordered table-striped table-hover table-responsive">
-        <thead class="table-dark">
-            <tr>
-                <th style="text-align:center;" width="10%">Name</th>
-                <th style="text-align:center;">Type</th>
-                <th style="text-align:center">Price</th>
-                <th style="text-align:center">Pow</th>
-                <th style="text-align:center">Time live</th>
-                <th style="text-align:center">Left Pips</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+    <div class='row'>
+        <div class='col-6'>
+            <h1 style ='text-align:center'>Orders Spot</h1>
+            <div class="table-responsive">
+            <table id="tblOrders_S"
+                class="table mt-2 table-bordered table-striped table-hover table-responsive">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="text-align:center;" width="10%">Name</th>
+                        <th style="text-align:center;">Type</th>
+                        <th style="text-align:center">Price</th>
+                        <th style="text-align:center">Pow</th>
+                        <th style="text-align:center">Time live</th>
+                        <th style="text-align:center">Left Pips</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            </div>
+        </div>
+        <div class='col-6'>
+            <h1 style ='text-align:center'>Orders Futures</h1>
+            <div class="table-responsive">
+            <table id="tblOrders_F"
+                class="table mt-2 table-bordered table-striped table-hover table-responsive">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="text-align:center;" width="10%">Name</th>
+                        <th style="text-align:center;">Type</th>
+                        <th style="text-align:center">Price</th>
+                        <th style="text-align:center">Pow</th>
+                        <th style="text-align:center">Time live</th>
+                        <th style="text-align:center">Left Pips</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            </div>
+        </div>
     </div>
+    
             
     <script>
         $(document).ready(function(){
@@ -52,6 +76,7 @@
                     url : "/get_data_order_book",
                     success: function(response) {
                         
+                        $('#tblOrders_S tbody').empty();
                         $('#tblOrders_F tbody').empty();
                         $('#tblOrderLevel tbody').empty();
     
@@ -59,6 +84,7 @@
                             var tr;
                             
                             $.each(response.orders_f, function (index, order){
+
                                 if (order[1] == 'bids')
                                 {
                                     tr = $(`<tr class="table-success">`);
@@ -75,6 +101,25 @@
                                 tr.append(`<td>${order[5]} %</td>`);
                                 tr.append(`</tr>`)
                                 $('#tblOrders_F').append(tr); 
+                            });
+
+                            $.each(response.orders_s, function (index, order){
+                                if (order[1] == 'bids')
+                                {
+                                    tr = $(`<tr class="table-success">`);
+                                } 
+                                else
+                                {
+                                    tr = $(`<tr class="table-danger">`);
+                                }
+                                tr.append(`<td>${order[0]}</td>`);
+                                tr.append(`<td>${order[1]}</td>`);
+                                tr.append(`<td>${order[2]}</td>`);
+                                tr.append(`<td>${order[3]}</td>`);
+                                tr.append(`<td>${order[4]} minute</td>`);
+                                tr.append(`<td>${order[5]} %</td>`);
+                                tr.append(`</tr>`)
+                                $('#tblOrders_S').append(tr); 
                             });
 
                             $.each(response.close_levels, function (index, level){

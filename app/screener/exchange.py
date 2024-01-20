@@ -11,3 +11,12 @@ def get_last_prices_f():
         result[value['symbol']] = {'best_bid':float(value['bid1Price']),'best_ask':float(value['ask1Price']), 'last_price':float(value['lastPrice'])}
     
     return result
+
+def get_last_prices_s():
+    session = HTTP()
+    data = session.get_tickers(category="spot")    
+    result = dict()
+    for value in data['result']['list']:
+        result[value['symbol']] = {'best_bid':float(value['bid1Price']),'best_ask':float(value['ask1Price']), 'last_price':float(value['lastPrice'])}
+    
+    return result

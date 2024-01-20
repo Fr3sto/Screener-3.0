@@ -1,28 +1,28 @@
 from psycopg2 import pool
 
 
-# from sshtunnel import SSHTunnelForwarder
+from sshtunnel import SSHTunnelForwarder
 
-# server =  SSHTunnelForwarder(
-#     ('31.129.99.176', 22), #Remote server IP and SSH port
-#     ssh_username = "root",
-#     ssh_password = "Endorphin25)",
-#     remote_bind_address=('localhost', 1234),
-#     local_bind_address=('localhost', 1234)) #PostgreSQL server IP and sever port on remote machine
+server =  SSHTunnelForwarder(
+    ('31.129.99.176', 22), #Remote server IP and SSH port
+    ssh_username = "root",
+    ssh_password = "Endorphin25)",
+    remote_bind_address=('localhost', 1234),
+    local_bind_address=('localhost', 1234)) #PostgreSQL server IP and sever port on remote machine
         
-# server.start()   
-
-# postgreSQL_pool = pool.ThreadedConnectionPool(1, 100, user="fr3sto",
-#                                                          password="endorphin25",
-#                                                          host=server.local_bind_host,
-#                                                          port=server.local_bind_port,
-#                                                          database="Screener")
+server.start()   
 
 postgreSQL_pool = pool.ThreadedConnectionPool(1, 100, user="fr3sto",
                                                          password="endorphin25",
-                                                         host='10.16.0.2',
-                                                         port=1234,
+                                                         host=server.local_bind_host,
+                                                         port=server.local_bind_port,
                                                          database="Screener")
+
+# postgreSQL_pool = pool.ThreadedConnectionPool(1, 100, user="fr3sto",
+#                                                          password="endorphin25",
+#                                                          host='10.16.0.2',
+#                                                          port=1234,
+#                                                          database="Screener")
 
 # GET
 
@@ -62,6 +62,15 @@ def get_all_order_book_f():
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
     cursor.execute('SELECT * from order_book_f where extract(epoch from date_end - date_start) / 60 > 5')
+    result = cursor.fetchall()
+    cursor.close()
+    postgreSQL_pool.putconn(connection)
+    return result
+
+def get_all_order_book_s():
+    connection = postgreSQL_pool.getconn()
+    cursor = connection.cursor()
+    cursor.execute('SELECT * from order_book where extract(epoch from date_end - date_start) / 60 > 5')
     result = cursor.fetchall()
     cursor.close()
     postgreSQL_pool.putconn(connection)

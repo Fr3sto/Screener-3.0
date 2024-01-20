@@ -5,13 +5,13 @@ from datetime import datetime
 
 from screener.database import  (get_all_positions,get_all_currency,
                                  get_close_levels, get_all_deals, 
-                                 get_deal_by_id, get_all_levels, get_all_status_check, get_all_order_book_f)
+                                 get_deal_by_id, get_all_levels, get_all_status_check, get_all_order_book_f, get_all_order_book_s)
 from screener.charts import ( get_chart_deal,
                               get_chart_deal_zoom, get_chart_close_levels,
                                 get_chart_three_close_level,get_chart_two_close_level, get_chart_equity,
                                 get_chart_current_position)
 
-from screener.exchange import  get_last_prices_f
+from screener.exchange import  get_last_prices_f,get_last_prices_s
 
 from screener.services import get_close_three_levels, get_close_two_levels
 
@@ -20,6 +20,7 @@ def big_orders(request):
     return render(request, 'screener/big_orders.html')
 
 def get_data_order_book(request):
+    good_orders_s = []
     good_orders_f = []
     good_levels = []
     try:
@@ -52,7 +53,7 @@ def get_data_order_book(request):
             for type, orders in types.items():
                 for price, order in orders.items():
                     order_count_decimal = str(round(price / curr_list[symbol]['min_step']))
-                    
+                    left_pips_order = 0
                     if order_count_decimal[-1] == '0':
                         if type == 'asks':
                             left_pips_order = 100 - best_ask / price * 100
@@ -60,9 +61,59 @@ def get_data_order_book(request):
                             left_pips_order = 100 - price / best_bid * 100
                             
                         time_live = round((order['date_end'] - order['date_start']).seconds / 60)
-                        if left_pips_order <= 3:
+                        if left_pips_order <= 3 and order['is_not_mm'] == True:
                             good_orders_f.append([symbol, type, price, order['pow'],time_live, round(left_pips_order,2)])
         good_orders_f = sorted(good_orders_f, key=lambda x: x[5])
+
+
+
+
+        order_book_list = get_all_order_book_s()
+        order_book_s = dict()
+
+
+        for order in order_book_list:
+            symbol = order[1]
+            if not symbol in order_book_s:
+                order_book_s[symbol] = {'bids':dict(),'asks':dict()}
+            type = order[2]
+            price = order[3]
+            pow = order[4]
+            quantity = order[5]
+            is_not_mm = order[6]
+            date_start = order[7]
+            date_end = order[8]
+            order_book_s[symbol][type][price] = {'date_start':date_start, 'date_end':date_end, 'pow':pow,
+                                            'is_not_mm':is_not_mm, 'quantity':quantity}
+
+
+        
+        last_prices_s = get_last_prices_s()
+        for symbol, types in order_book_s.items():
+            best_bid = last_prices_s[symbol]['best_bid']
+            best_ask = last_prices_s[symbol]['best_ask']
+
+            for type, orders in types.items():
+                for price, order in orders.items():
+                    order_count_decimal = str(round(price / curr_list[symbol]['min_step']))
+                    
+                    if order_count_decimal[-1] == '0':
+                        left_pips_order = 0
+                        if type == 'asks':
+                            left_pips_order = 100 - best_ask / price * 100
+                        else:
+                            left_pips_order = 100 - price / best_bid * 100
+                            
+                        time_live = round((order['date_end'] - order['date_start']).seconds / 60)
+                        if left_pips_order <= 3 and order['is_not_mm'] == True:
+                            good_orders_s.append([symbol, type, price, order['pow'],time_live, round(left_pips_order,2)])
+        good_orders_s = sorted(good_orders_s, key=lambda x: x[5])
+
+
+
+
+
+
 
         levels = get_all_levels()
         for level in levels:
@@ -82,7 +133,7 @@ def get_data_order_book(request):
                             order_count_decimal = str(round(price_order / curr_list[symbol]['min_step']))
                             if order_count_decimal[-1] == '0':
                                 left_pips_order_level = 100 - price / price_order * 100
-                                if left_pips_order_level < 0.5:
+                                if left_pips_order_level < 0.5 and order['is_not_mm'] == True:
                                     left_pips_order = 100 - last_price / price_order * 100
                                     time_live = (order['date_end'] - order['date_start']).seconds / 60
                                     good_levels.append((type, symbol, price,round(time_live_level), round(left_pips,2), price_order, order['pow'],round(time_live), round(left_pips_order,2)))
@@ -94,7 +145,7 @@ def get_data_order_book(request):
                             order_count_decimal = str(round(price_order / curr_list[symbol]['min_step']))
                             if order_count_decimal[-1] == '0':
                                 left_pips_order_level = 100 - price_order / price * 100
-                                if left_pips_order_level < 0.5:
+                                if left_pips_order_level < 0.5 and order['is_not_mm'] == True:
                                     left_pips_order = 100 - price_order / last_price * 100
                                     time_live = (order['date_end'] - order['date_start']).seconds / 60
                                     good_levels.append((type, symbol, price,round(time_live_level), round(left_pips,2), price_order, order['pow'],round(time_live), round(left_pips_order,2)))
@@ -105,7 +156,8 @@ def get_data_order_book(request):
 
     except Exception as e:
         print(e)
-    return JsonResponse({'orders_f':good_orders_f, 'close_levels':good_levels})
+
+    return JsonResponse({'orders_f':good_orders_f,'orders_s':good_orders_s, 'close_levels':good_levels})
 
 def index(request):
     return render(request, 'screener/close_three_levels.html')
