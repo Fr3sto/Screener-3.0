@@ -10,6 +10,7 @@
             <thead class="table-dark">
                 <tr>
                     <th style='text-align:center' width="10%">Symbol</th>
+                    <th style="text-align:center">Strategy</th>
                     <th style="text-align:center">Side</th>
                     <th style="text-align:center">Quantity</th>
                     <th style="text-align:center">Price Open</th>
@@ -39,6 +40,7 @@
             <thead class="table-dark">
                 <tr>
                     <th style='text-align:center' width="10%">Symbol</th>
+                    <th style="text-align:center">Strategy</th>
                     <th style="text-align:center">Side</th>
                     <th style="text-align:center">Quantity</th>
                     <th style="text-align:center">Price Open</th>
@@ -78,6 +80,7 @@
                                 tr.append(`<td>${position[7]}</td>`);
                                 tr.append(`<td>${position[8]}</td>`);
                                 tr.append(`<td>${position[9]}</td>`);
+                                tr.append(`<td>${position[10]}</td>`);
                                 tr.append(`</tr>`)
                                 $('#tblPositions').append(tr); 
                             });
@@ -101,7 +104,8 @@
                                 tr.append(`<td>${deal[5]}</td>`);
                                 tr.append(`<td>${deal[6]}</td>`);
                                 tr.append(`<td>${deal[7]}</td>`);
-                                tr.append(`<td>${deal[8]} %</td>`);
+                                tr.append(`<td>${deal[8]}</td>`);
+                                tr.append(`<td>${deal[9]} %</td>`);
                                 tr.append(`</tr>`)
                                 $('#tblDeals').append(tr); 
                             });

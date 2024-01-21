@@ -234,7 +234,7 @@ def get_data_position(request):
 
         for pos in positions:
             my_list = list(pos)
-            my_list[5] =  my_list[5].strftime("%d/%m/%Y, %H:%M:%S")
+            my_list[6] =  my_list[6].strftime("%d/%m/%Y, %H:%M:%S")
             result_positions.append(my_list)
 
         deals = get_all_deals()
@@ -243,17 +243,17 @@ def get_data_position(request):
 
         for deal in deals:
             my_list = list(deal)
-            my_list[5] =  my_list[5].strftime("%d/%m/%Y, %H:%M:%S")
-            my_list[7] =  my_list[7].strftime("%d/%m/%Y, %H:%M:%S")
+            my_list[6] =  my_list[6].strftime("%d/%m/%Y, %H:%M:%S")
+            my_list[8] =  my_list[8].strftime("%d/%m/%Y, %H:%M:%S")
 
-            side = deal[2]
-            quantity = deal[3]
-            price_open = deal[4]
-            price_close = deal[6]
-            profit = deal[8]
+            side = deal[3]
+            quantity = deal[4]
+            price_open = deal[5]
+            price_close = deal[7]
+            profit = deal[9]
 
             percent = round(profit / 5 * 100,2)
-            my_list[8] = percent
+            my_list[9] = percent
             result_deals.append(my_list)
     except Exception as e:
         print(e)

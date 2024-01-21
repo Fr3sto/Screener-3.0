@@ -98,7 +98,7 @@ def get_all_positions():
 def get_all_deals():
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
-    cursor.execute('SELECT * FROM Deals order by Date_Close desc')
+    cursor.execute('SELECT Id, Symbol, Strategy, Side, Quantity,Price_Open,Date_Open,Price_Close,Date_Close,Profit,Comment FROM Deals order by Date_Close desc')
     result = cursor.fetchall()
     cursor.close()
     postgreSQL_pool.putconn(connection)
