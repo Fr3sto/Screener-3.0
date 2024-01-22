@@ -350,7 +350,7 @@ def get_chart_equity(deals):
     sum_percent = 0
     i = 1
     for deal in reversed(deals):
-        profit = deal[8]
+        profit = deal[9]
         percent = round(profit / 5 * 100,2)
         sum_percent += percent
         profits.append((sum_percent, i))
@@ -372,14 +372,114 @@ def get_chart_equity(deals):
     # fig = px.line(df, x="id", y="profit", title='Equity of deals')
     return fig.to_html()
 
-def get_chart_deal_zoom(deal):
+
+def get_chart_deal_rebound_level_zoom(deal):
     symbol = deal[1]
-    side = deal[2]
-    price_open = deal[4]
-    date_open = deal[5]
-    price_close = deal[6]
-    date_close = deal[7]
-    comment = deal[9]
+    side = deal[3]
+    price_open = deal[5]
+    date_open = deal[6]
+    price_close = deal[7]
+    date_close = deal[8]
+    comment = deal[10]
+    split_lines = comment.split(';')
+    type = split_lines[0].split('=')[1]
+    price_order = float(split_lines[1])
+    date_start_order = split_lines[4]
+
+    
+
+    date_start_order = datetime.strptime(date_start_order, "%Y-%m-%d %H:%M:%S.%f")
+
+    date_from = date_open - timedelta(hours=2)
+    date_to = date_close + timedelta(hours=2)
+    
+    
+    df = pd.DataFrame(get_candles_by_symbol_tf(symbol, 5), columns=['id','symbol','tf','Open','High','Low','Close','Volume','Date'])
+    df = df.drop(['id','symbol','tf'],axis=1)
+    df = df.sort_values(by=['Date'])
+    df = df[(df['Date'] > date_from) & (df['Date'] < date_to)]
+    fig = go.Figure(data=[go.Candlestick(x=df['Date'],
+                                         open=df['Open'], high=df['High'],
+                                         low=df['Low'], close=df['Close'])])
+    
+    fig.update_layout(xaxis_rangeslider_visible=False)
+
+    fig.add_scatter(x = [date_open], y = [price_open], mode='markers', marker=dict(size=10, color="Green"))
+    fig.add_scatter(x = [date_close], y = [price_close], mode='markers', marker=dict(size=10, color="Red"))
+
+    color = ''
+
+    if type == 'asks':
+        color = 'Red'
+    else:
+        color = 'Green'
+    
+    fig.add_shape(type="line",
+                        x0=date_from, y0=price_order, x1=date_open, y1=price_order,
+                        line=dict(color=color, width=3))
+
+    return fig.to_html()
+
+
+def get_chart_deal_rebound_level(deal):
+
+    symbol = deal[1]
+    side = deal[3]
+    price_open = deal[5]
+    date_open = deal[6]
+    price_close = deal[7]
+    date_close = deal[8]
+    comment = deal[10]
+    split_lines = comment.split(';')
+    type = split_lines[0].split('=')[1]
+    price_order = float(split_lines[1])
+    date_start_order = split_lines[4]
+
+    
+
+    date_start_order = datetime.strptime(date_start_order, "%Y-%m-%d %H:%M:%S.%f")
+
+
+    
+
+    date_from = date_start_order - timedelta(hours=20)
+    date_to = date_close + timedelta(hours=8)
+    
+    
+    df = pd.DataFrame(get_candles_by_symbol_tf(symbol, 5), columns=['id','symbol','tf','Open','High','Low','Close','Volume','Date'])
+    df = df.drop(['id','symbol','tf'],axis=1)
+    df = df.sort_values(by=['Date'])
+    df = df[(df['Date'] > date_from) & (df['Date'] < date_to)]
+    fig = go.Figure(data=[go.Candlestick(x=df['Date'],
+                                         open=df['Open'], high=df['High'],
+                                         low=df['Low'], close=df['Close'])])
+    
+    fig.update_layout(xaxis_rangeslider_visible=False)
+
+    fig.add_scatter(x = [date_open], y = [price_open], mode='markers', marker=dict(size=10, color="Green"))
+    fig.add_scatter(x = [date_close], y = [price_close], mode='markers', marker=dict(size=10, color="Red"))
+
+    color = ''
+
+    if type == 'asks':
+        color = 'Red'
+    else:
+        color = 'Green'
+    
+    fig.add_shape(type="line",
+                        x0=date_start_order, y0=price_order, x1=date_open, y1=price_order,
+                        line=dict(color=color, width=3))
+
+    return fig.to_html()
+
+def get_chart_deal_break_level_zoom(deal):
+    symbol = deal[1]
+    side = deal[3]
+    price_open = deal[5]
+    date_open = deal[6]
+    price_close = deal[7]
+    date_close = deal[8]
+    comment = deal[10]
     split_lines = comment.split(';')
     type = int(split_lines[0].split('=')[1])
     price_level_1 = float(split_lines[1].split('=')[1])
@@ -441,15 +541,15 @@ def get_chart_deal_zoom(deal):
     return fig.to_html()
 
 
-def get_chart_deal(deal):
+def get_chart_deal_break_level(deal):
 
     symbol = deal[1]
-    side = deal[2]
-    price_open = deal[4]
-    date_open = deal[5]
-    price_close = deal[6]
-    date_close = deal[7]
-    comment = deal[9]
+    side = deal[3]
+    price_open = deal[5]
+    date_open = deal[6]
+    price_close = deal[7]
+    date_close = deal[8]
+    comment = deal[10]
     split_lines = comment.split(';')
     type = int(split_lines[0].split('=')[1])
     price_level_1 = float(split_lines[1].split('=')[1])
@@ -513,99 +613,5 @@ def get_chart_deal(deal):
         fig.add_shape(type="line",
                             x0=date_level_3, y0=price_level_3, x1=date_open, y1=price_level_3,
                             line=dict(color=color, width=3))
-
-    return fig.to_html()
-
-
-
-    level = get_level_by_id(id)
-    symbol = level[1]
-    price = level[3]
-    type = level[4]
-    date_start = level[5]
-
-    df = pd.DataFrame(get_candles_by_symbol_tf(symbol, 5), columns=['id','symbol','tf','Open','High','Low','Close','Volume','Date'])
-    df = df.drop(['id','symbol','tf'],axis=1)
-    df = df.sort_values(by=['Date'])
-
-    fig = go.Figure(data=[go.Candlestick(x=df['Date'],
-                                         open=df['Open'], high=df['High'],
-                                         low=df['Low'], close=df['Close'])])
-    
-    
-    fig.update_layout(xaxis_rangeslider_visible=False)
-
-    color = ''
-    if type == 1:
-        color = 'Red'
-    else:
-         color = 'Green'
-    fig.add_shape(type="line",
-                        x0=date_start, y0=price, x1=df['Date'].iloc[-1], y1=price,
-                        line=dict(color=color, width=3))
-
-    return fig.to_html()
-
-
-    #fig = px.line(df, x = 'Date', y = 'Close')
-
-    fig = go.Figure(data=[go.Candlestick(x=df['Date'],
-                                         open=df['Open'], high=df['High'],
-                                         low=df['Low'], close=df['Close'])])
-    
-    
-    fig.update_layout(xaxis_rangeslider_visible=False)
-    add_min = 0
-    if tf == 5:
-        add_min = 15
-    elif tf == 15:
-        add_min = 60
-    elif tf == 30:
-        add_min = 120
-    elif tf == 60:
-        add_min = 240
-
-    dateEnd = impulse[7] + timedelta(minutes=add_min)
-    
-    need_type_level = 0
-    color = ''
-    if impulse[2] == 'L':
-        color = 'Green'
-        need_type_level = 2
-    else:
-        color = 'Red'
-        need_type_level = 1
-
-    fig.add_shape(type="rect",
-                          x0=impulse[5], y0=impulse[4], x1=dateEnd, y1=impulse[6],
-                          line=dict(color=color))
-
-    order_book_list_s = get_order_book_by_symbol_s(symbol)
-    order_book_list_f = get_order_book_by_symbol_f(symbol)
-
-    up_price = 0
-    down_price = 0
-    if impulse[2] == 'L':
-        up_price = impulse[6]
-        up_price += up_price * 0.01
-
-        down_price = impulse[4]
-    else:
-        up_price = impulse[4]
-
-        down_price = impulse[6]
-        down_price -= down_price * 0.01
-
-    for order in order_book_list_s:
-        if order[3] < up_price and order[3] > down_price and order[6] == True:
-                        fig.add_shape(type="line",
-                                       x0=order[7], y0=order[3], x1=df['Date'].iloc[-1], y1=order[3],
-                                      line=dict(color='Blue', width=3))
-    
-    for order in order_book_list_f:
-        if order[3] < up_price and order[3] > down_price and order[6] == True:
-                        fig.add_shape(type="line",
-                                       x0=order[7], y0=order[3], x1=df['Date'].iloc[-1], y1=order[3],
-                                      line=dict(color='Red', width=3))
 
     return fig.to_html()

@@ -1,28 +1,28 @@
 from psycopg2 import pool
 
 
-from sshtunnel import SSHTunnelForwarder
+# from sshtunnel import SSHTunnelForwarder
 
-server =  SSHTunnelForwarder(
-    ('31.129.99.176', 22), #Remote server IP and SSH port
-    ssh_username = "root",
-    ssh_password = "Endorphin25)",
-    remote_bind_address=('localhost', 1234),
-    local_bind_address=('localhost', 1234)) #PostgreSQL server IP and sever port on remote machine
+# server =  SSHTunnelForwarder(
+#     ('31.129.99.176', 22), #Remote server IP and SSH port
+#     ssh_username = "root",
+#     ssh_password = "Endorphin25)",
+#     remote_bind_address=('localhost', 1234),
+#     local_bind_address=('localhost', 1234)) #PostgreSQL server IP and sever port on remote machine
         
-server.start()   
-
-postgreSQL_pool = pool.ThreadedConnectionPool(1, 100, user="fr3sto",
-                                                         password="endorphin25",
-                                                         host=server.local_bind_host,
-                                                         port=server.local_bind_port,
-                                                         database="Screener")
+# server.start()   
 
 # postgreSQL_pool = pool.ThreadedConnectionPool(1, 100, user="fr3sto",
 #                                                          password="endorphin25",
-#                                                          host='10.16.0.2',
-#                                                          port=1234,
+#                                                          host=server.local_bind_host,
+#                                                          port=server.local_bind_port,
 #                                                          database="Screener")
+
+postgreSQL_pool = pool.ThreadedConnectionPool(1, 100, user="fr3sto",
+                                                         password="endorphin25",
+                                                         host='10.16.0.2',
+                                                         port=1234,
+                                                         database="Screener")
 
 # GET
 
@@ -52,7 +52,7 @@ def get_position_by_symbol(symbol):
 def get_deal_by_id(id):
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
-    cursor.execute('SELECT * FROM Deals where id = %s',(id,))
+    cursor.execute('SELECT Id, Symbol, Strategy, Side, Quantity,Price_Open,Date_Open,Price_Close,Date_Close,Profit,Comment FROM Deals where id = %s',(id,))
     result = cursor.fetchall()
     cursor.close()
     postgreSQL_pool.putconn(connection)
@@ -89,7 +89,7 @@ def get_all_status_check():
 def get_all_positions():
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
-    cursor.execute('SELECT * FROM Position')
+    cursor.execute('SELECT * FROM Position Order by Symbol')
     result = cursor.fetchall()
     cursor.close()
     postgreSQL_pool.putconn(connection)

@@ -6,8 +6,8 @@ from datetime import datetime
 from screener.database import  (get_all_positions,get_all_currency,
                                  get_close_levels, get_all_deals, 
                                  get_deal_by_id, get_all_levels, get_all_status_check, get_all_order_book_f, get_all_order_book_s)
-from screener.charts import ( get_chart_deal,
-                              get_chart_deal_zoom, get_chart_close_levels,
+from screener.charts import ( get_chart_deal_break_level, get_chart_deal_rebound_level, get_chart_deal_rebound_level_zoom,
+                              get_chart_deal_break_level_zoom, get_chart_close_levels,
                                 get_chart_three_close_level,get_chart_two_close_level, get_chart_equity,
                                 get_chart_current_position)
 
@@ -159,6 +159,7 @@ def get_data_order_book(request):
 
     return JsonResponse({'orders_f':good_orders_f,'orders_s':good_orders_s, 'close_levels':good_levels})
 
+
 def index(request):
     return render(request, 'screener/close_three_levels.html')
 
@@ -200,11 +201,11 @@ def positions(request):
     good_deals = 0
     bad_deals = 0
     for deal in deals:
-        side = deal[2]
-        quantity = deal[3]
-        price_open = deal[4]
-        price_close = deal[6]
-        profit = deal[8]
+        side = deal[3]
+        quantity = deal[4]
+        price_open = deal[5]
+        price_close = deal[7]
+        profit = deal[9]
 
         if profit > 0:
             profit += price_open * quantity * 0.00025
@@ -267,7 +268,13 @@ def current_deal(request, id):
     print(id)
     deals = get_deal_by_id(int(id))
     symbol = deals[0][1]
-    chart = get_chart_deal(deals[0])
-    chart_2 = get_chart_deal_zoom(deals[0])
-    return render(request, 'screener/current_deal.html', {'name':symbol,'chart':chart, 'chart_2':chart_2})
+    strategy = deals[0][2]
+    if strategy == 'break_level':
+        chart = get_chart_deal_break_level(deals[0])
+        chart_2 = get_chart_deal_break_level_zoom(deals[0])
+        return render(request, 'screener/current_deal.html', {'name':symbol,'chart':chart, 'chart_2':chart_2})
+    elif strategy == 'rebound_level':
+        chart = get_chart_deal_rebound_level(deals[0])
+        chart_2 = get_chart_deal_rebound_level_zoom(deals[0])
+        return render(request, 'screener/current_deal.html', {'name':symbol,'chart':chart, 'chart_2':chart_2})
 
