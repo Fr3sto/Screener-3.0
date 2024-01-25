@@ -26,6 +26,34 @@ postgreSQL_pool = pool.ThreadedConnectionPool(1, 100, user="fr3sto",
 
 # GET
 
+def get_all_symbols_for_order_book():
+    connection = postgreSQL_pool.getconn()
+    cursor = connection.cursor()
+    cursor.execute('SELECT * FROM Symbols_Order_Book')
+    result = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    postgreSQL_pool.putconn(connection)
+
+    symbols_ob = dict()
+
+    for curr in result:
+        exchange = curr[1]
+        type = curr[2]
+        symbol = curr[3]
+        min_step = curr[4]
+        
+        if not exchange in symbols_ob:
+            symbols_ob[exchange] = dict()
+        
+        if not type in symbols_ob[exchange]:
+            symbols_ob[exchange][type] = dict()
+
+        symbols_ob[exchange][type][symbol] = {'min_step':float(min_step)}
+
+        
+    return symbols_ob
+
 def get_all_currency():
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
@@ -58,23 +86,16 @@ def get_deal_by_id(id):
     postgreSQL_pool.putconn(connection)
     return result
 
-def get_all_order_book_f():
+
+def get_all_order_books():
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
-    cursor.execute('SELECT * from order_book_f where extract(epoch from date_end - date_start) / 60 > 5')
+    cursor.execute('SELECT * from All_Order_Book where extract(epoch from date_end - date_start) / 60 >= 30')
     result = cursor.fetchall()
     cursor.close()
     postgreSQL_pool.putconn(connection)
     return result
 
-def get_all_order_book_s():
-    connection = postgreSQL_pool.getconn()
-    cursor = connection.cursor()
-    cursor.execute('SELECT * from order_book where extract(epoch from date_end - date_start) / 60 > 5')
-    result = cursor.fetchall()
-    cursor.close()
-    postgreSQL_pool.putconn(connection)
-    return result
 
 def get_all_status_check():
     connection = postgreSQL_pool.getconn()

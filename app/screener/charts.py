@@ -350,11 +350,12 @@ def get_chart_equity(deals):
     sum_percent = 0
     i = 1
     for deal in reversed(deals):
-        profit = deal[9]
-        percent = round(profit / 5 * 100,2)
-        sum_percent += percent
-        profits.append((sum_percent, i))
-        i+=1
+        if deal[2] == 'rebound_level':
+            profit = deal[9]
+            percent = round(profit / 5 * 100,2)
+            sum_percent += percent
+            profits.append((sum_percent, i))
+            i+=1
     
 
     colors=['red' if val[0] < 0 else 'green' for val in profits]

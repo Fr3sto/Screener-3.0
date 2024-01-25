@@ -3,13 +3,13 @@ from datetime import datetime
 
 from screener.database import get_all_currency, get_all_levels
 
-from screener.exchange import get_last_prices_f
+from screener.exchange import get_last_prices_bybit_f
 
 
 def get_close_three_levels():
 
     close_levels_result = []
-    last_prices = get_last_prices_f()
+    last_prices = get_last_prices_bybit_f()
 
     levels = get_all_levels()
 
@@ -60,7 +60,7 @@ def get_close_three_levels():
 
 def get_close_two_levels():
     close_levels_result = []
-    last_prices = get_last_prices_f()
+    last_prices = get_last_prices_bybit_f()
     now = datetime.now()
 
     levels = get_all_levels()
