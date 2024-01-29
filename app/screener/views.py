@@ -22,8 +22,6 @@ def big_orders(request):
 
 all_currency = get_all_symbols_for_order_book()
 
-binance = ccxt.binance()
-
 def get_data_order_book(request):
     all_good_orders = dict()
 
@@ -64,22 +62,21 @@ def get_data_order_book(request):
             for type_exchange, symbols in type_exchanges.items():
                 good_orders = []
                 for symbol, types in symbols.items():
-                    if symbol in all_currency[exchange][type_exchange] and symbol in last_prices[exchange][type_exchange]:
-                        best_bid = last_prices[exchange][type_exchange][symbol]['best_bid']
-                        best_ask = last_prices[exchange][type_exchange][symbol]['best_ask']
-                        for type, prices in types.items():
-                            for price, order in prices.items():
-                                order_count_decimal = str(round(price / all_currency[exchange][type_exchange][symbol]['min_step']))
-                                left_pips_order = 0
-                                if order_count_decimal[-1] == '0':
-                                    if type == 'asks':
-                                        left_pips_order = 100 - best_ask / price * 100
-                                    else:
-                                        left_pips_order = 100 - price / best_bid * 100
-                                        
-                                    time_live = round((order['date_end'] - order['date_start']).seconds / 60)
-                                    if left_pips_order <= 3 and order['is_not_mm'] == True:
-                                        good_orders.append([symbol, type, price, order['pow'],time_live, round(left_pips_order,2)])
+                    best_bid = last_prices[exchange][type_exchange][symbol]['best_bid']
+                    best_ask = last_prices[exchange][type_exchange][symbol]['best_ask']
+                    for type, prices in types.items():
+                        for price, order in prices.items():
+                            order_count_decimal = str(round(price / all_currency[exchange][type_exchange][symbol]['min_step']))
+                            left_pips_order = 0
+                            if order_count_decimal[-1] == '0':
+                                if type == 'asks':
+                                    left_pips_order = 100 - best_ask / price * 100
+                                else:
+                                    left_pips_order = 100 - price / best_bid * 100
+                                    
+                                time_live = round((order['date_end'] - order['date_start']).seconds / 60)
+                                if left_pips_order <= 3 and order['is_not_mm'] == True:
+                                    good_orders.append([symbol, type, price, order['pow'],time_live, round(left_pips_order,2)])
                 good_orders = sorted(good_orders, key=lambda x: x[5])
                 all_good_orders[exchange][type_exchange] = good_orders
 
@@ -172,22 +169,16 @@ def positions(request):
 
     all_deals = []
     for deal in deals:
-        if deal[2] == 'rebound_level':
-            side = deal[3]
-            quantity = deal[4]
-            price_open = deal[5]
-            date_open = deal[6]
-            price_close = deal[7]
-            profit = deal[9]
+        profit = deal[9]
 
-            percent = round(profit / 5 * 100,2)
-            sum_profit += percent
+        percent = round(profit / 5 * 100,2)
+        sum_profit += percent
 
-            if percent > 0:
-                good_deals += 1
-            
-            if percent < -0.1:
-                bad_deals += 1
+        if percent > 0:
+            good_deals += 1
+        
+        if percent < -0.1:
+            bad_deals += 1
     
     percent_good = 0
     if len(deals) > 1:
@@ -201,10 +192,36 @@ def get_data_position(request):
     try:
         positions = get_all_positions()
         
+        #9 7 
 
+        last_prices = get_all_last_prices()
         for pos in positions:
             my_list = list(pos)
-            my_list[6] =  my_list[6].strftime("%d/%m/%Y, %H:%M:%S")
+            my_list[5] =  my_list[5].strftime("%d/%m/%Y, %H:%M:%S")
+            comments = my_list[11].split(';')
+            exchange = comments[0].split('=')[1]
+            type_exchange = comments[1].split('=')[1]
+            symbol = comments[2].split('=')[1]
+            type_order = comments[3].split('=')[1]
+
+            best_bid = last_prices[exchange][type_exchange][symbol]['best_bid']
+            best_ask = last_prices[exchange][type_exchange][symbol]['best_ask']
+            side = my_list[2]
+            stop = my_list[6]
+            tp = my_list[8]
+            if side == 'LONG':
+                left_pips_stop = round(100 - stop / best_ask * 100,2)
+                left_pips_take = round(100 - best_bid / tp * 100, 2)
+
+                my_list[7] = left_pips_stop
+                my_list[9] = left_pips_take
+            else:
+                left_pips_stop = round(100 - best_bid / stop * 100,2)
+                left_pips_take = round(100 - tp / best_ask * 100,2)
+
+                my_list[7] = left_pips_stop
+                my_list[9] = left_pips_take
+
             result_positions.append(my_list)
 
         deals = get_all_deals()
@@ -216,10 +233,6 @@ def get_data_position(request):
             my_list[6] =  my_list[6].strftime("%d/%m/%Y, %H:%M:%S")
             my_list[8] =  my_list[8].strftime("%d/%m/%Y, %H:%M:%S")
 
-            side = deal[3]
-            quantity = deal[4]
-            price_open = deal[5]
-            price_close = deal[7]
             profit = deal[9]
 
             percent = round(profit / 5 * 100,2)
