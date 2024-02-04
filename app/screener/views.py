@@ -6,10 +6,9 @@ import ccxt
 
 from screener.database import  (get_all_positions,get_all_currency,
                                  get_close_levels, get_all_deals, 
-                                 get_deal_by_id, get_all_levels, get_all_status_check, get_all_order_books, get_all_symbols_for_order_book)
-from screener.charts import ( get_chart_deal_break_level, get_chart_deal_rebound_level, get_chart_deal_rebound_level_zoom,
-                              get_chart_deal_break_level_zoom, get_chart_close_levels,
-                                get_chart_three_close_level,get_chart_two_close_level, get_chart_equity,
+                                 get_deal_by_id, get_all_levels, get_all_status_check, get_all_order_books, get_all_symbols_for_order_book,
+                                 get_position_by_id)
+from screener.charts import (  get_chart_deal_rebound_level, get_chart_deal_rebound_level_zoom, get_chart_equity,
                                 get_chart_current_position)
 
 from screener.exchange import get_all_last_prices
@@ -80,43 +79,6 @@ def get_data_order_book(request):
                 good_orders = sorted(good_orders, key=lambda x: x[5])
                 all_good_orders[exchange][type_exchange] = good_orders
 
-        # levels = get_all_levels()
-        # for level in levels:
-        #     symbol = level[1]
-        #     price = level[3]
-        #     type = level[4]
-        #     date_start = level[5]
-        #     time_live_level = (datetime.now() - date_start).seconds / 60
-        #     last_price = last_prices[symbol]['last_price']
-
-        #     left_pips = 0
-        #     if type == 1:
-        #         left_pips = 100 - last_price / price * 100
-        #         if left_pips < 2:
-        #             for price_order, order in order_book[symbol]['asks'].items():
-        #                 if price_order >= price:
-        #                     order_count_decimal = str(round(price_order / curr_list[symbol]['min_step']))
-        #                     if order_count_decimal[-1] == '0':
-        #                         left_pips_order_level = 100 - price / price_order * 100
-        #                         if left_pips_order_level < 0.5 and order['is_not_mm'] == True:
-        #                             left_pips_order = 100 - last_price / price_order * 100
-        #                             time_live = (order['date_end'] - order['date_start']).seconds / 60
-        #                             good_levels.append((type, symbol, price,round(time_live_level), round(left_pips,2), price_order, order['pow'],round(time_live), round(left_pips_order,2)))
-        #     else:
-        #         left_pips = 100 - price / last_price * 100
-        #         if left_pips < 2:
-        #             for price_order, order in order_book[symbol]['bids'].items():
-        #                 if price_order <= price:
-        #                     order_count_decimal = str(round(price_order / curr_list[symbol]['min_step']))
-        #                     if order_count_decimal[-1] == '0':
-        #                         left_pips_order_level = 100 - price_order / price * 100
-        #                         if left_pips_order_level < 0.5 and order['is_not_mm'] == True:
-        #                             left_pips_order = 100 - price_order / last_price * 100
-        #                             time_live = (order['date_end'] - order['date_start']).seconds / 60
-        #                             good_levels.append((type, symbol, price,round(time_live_level), round(left_pips,2), price_order, order['pow'],round(time_live), round(left_pips_order,2)))
-            
-
-        # good_levels = sorted(good_levels, key=lambda x: x[4])
             
 
     except Exception as e:
@@ -137,10 +99,6 @@ def get_data(request):
     
     
     return JsonResponse({'close_levels':close_levels_result})
-
-def chart_close_level(request, symbol, level):
-    chart = get_chart_three_close_level(symbol, level)
-    return render(request, 'screener/close_level.html', {'chart':chart, 'name':symbol})
 
 
 def status_check(request):
@@ -167,9 +125,8 @@ def positions(request):
     good_deals = 0
     bad_deals = 0
 
-    all_deals = []
     for deal in deals:
-        profit = deal[9]
+        profit = deal[10]
 
         percent = round(profit / 5 * 100,2)
         sum_profit += percent
@@ -197,32 +154,34 @@ def get_data_position(request):
         last_prices = get_all_last_prices()
         for pos in positions:
             my_list = list(pos)
-            my_list[5] =  my_list[5].strftime("%d/%m/%Y, %H:%M:%S")
-            comments = my_list[11].split(';')
-            exchange = comments[0].split('=')[1]
-            type_exchange = comments[1].split('=')[1]
-            symbol = comments[2].split('=')[1]
-            type_order = comments[3].split('=')[1]
+            id = my_list[0]
+            exchange = my_list[1]
+            type_exchange = my_list[2]
+            symbol = my_list[3]
+            side = my_list[4]
+            quantity = my_list[5]
+            price_open = my_list[6]
+            date_open =  my_list[7].strftime("%d/%m/%Y, %H:%M:%S")
 
             best_bid = last_prices[exchange][type_exchange][symbol]['best_bid']
             best_ask = last_prices[exchange][type_exchange][symbol]['best_ask']
-            side = my_list[2]
-            stop = my_list[6]
-            tp = my_list[8]
+            stop = my_list[8]
+            stop_vol = my_list[9]
+            tp = my_list[11]
+            left_pips_stop = 0
+            left_pips_take = 0
             if side == 'LONG':
                 left_pips_stop = round(100 - stop / best_ask * 100,2)
                 left_pips_take = round(100 - best_bid / tp * 100, 2)
 
-                my_list[7] = left_pips_stop
-                my_list[9] = left_pips_take
             else:
                 left_pips_stop = round(100 - best_bid / stop * 100,2)
                 left_pips_take = round(100 - tp / best_ask * 100,2)
 
-                my_list[7] = left_pips_stop
-                my_list[9] = left_pips_take
 
-            result_positions.append(my_list)
+            result_positions.append([id, exchange, type_exchange, symbol,
+                                      side, quantity,price_open, date_open,
+                                        stop_vol, stop, left_pips_stop, tp, left_pips_take])
 
         deals = get_all_deals()
         
@@ -230,33 +189,31 @@ def get_data_position(request):
 
         for deal in deals:
             my_list = list(deal)
-            my_list[6] =  my_list[6].strftime("%d/%m/%Y, %H:%M:%S")
-            my_list[8] =  my_list[8].strftime("%d/%m/%Y, %H:%M:%S")
+            my_list[7] =  my_list[7].strftime("%d/%m/%Y, %H:%M:%S")
+            my_list[9] =  my_list[9].strftime("%d/%m/%Y, %H:%M:%S")
 
-            profit = deal[9]
+            profit = deal[10]
 
             percent = round(profit / 5 * 100,2)
-            my_list[9] = percent
+            my_list[10] = percent
             result_deals.append(my_list)
     except Exception as e:
         print(e)
     return JsonResponse({'positions':result_positions, 'deals':result_deals})
 
-def current_position(request, symbol):
-    chart = get_chart_current_position(symbol)
-    return render(request, 'screener/close_level.html', {'chart':chart, 'name':symbol})
+
+
+def current_position(request, id):
+    pos = get_position_by_id(id)
+    chart = get_chart_current_position(pos)
+    return render(request, 'screener/close_level.html', {'chart':chart, 'name':pos[3]})
 
 def current_deal(request, id):
     print(id)
     deals = get_deal_by_id(int(id))
-    symbol = deals[0][1]
-    strategy = deals[0][2]
-    if strategy == 'break_level':
-        chart = get_chart_deal_break_level(deals[0])
-        chart_2 = get_chart_deal_break_level_zoom(deals[0])
-        return render(request, 'screener/current_deal.html', {'name':symbol,'chart':chart, 'chart_2':chart_2})
-    elif strategy == 'rebound_level':
-        chart = get_chart_deal_rebound_level(deals[0])
-        chart_2 = get_chart_deal_rebound_level_zoom(deals[0])
-        return render(request, 'screener/current_deal.html', {'name':symbol,'chart':chart, 'chart_2':chart_2})
+    symbol = deals[3]
+    chart = get_chart_deal_rebound_level(deals)
+    chart_2 = get_chart_deal_rebound_level_zoom(deals)
+    return render(request, 'screener/current_deal.html', {'name':symbol,'chart':chart, 'chart_2':chart_2})
+        
 

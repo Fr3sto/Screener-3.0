@@ -9,11 +9,14 @@
                 class="table mt-2 table-bordered table-striped table-hover table-responsive">
             <thead class="table-dark">
                 <tr>
-                    <th style='text-align:center' width="10%">Symbol</th>
+                    <th style='text-align:center'>Exchange</th>
+                    <th style='text-align:center'>Type Exchange</th>
+                    <th style='text-align:center'>Symbol</th>
                     <th style="text-align:center">Side</th>
                     <th style="text-align:center">Quantity</th>
                     <th style="text-align:center">Price Open</th>
                     <th style="text-align:center">Date Open</th>
+                    <th style="text-align:center">Order Volume</th>
                     <th style="text-align:center">Stop</th>
                     <th style="text-align:center">Left Pips Stop</th>
                     <th style="text-align:center">Take</th>
@@ -38,8 +41,9 @@
                 class="table mt-2 table-bordered table-striped table-hover table-responsive">
             <thead class="table-dark">
                 <tr>
-                    <th style='text-align:center' width="10%">Symbol</th>
-                    <th style="text-align:center">Strategy</th>
+                    <th style='text-align:center'>Exchange</th>
+                    <th style='text-align:center'>Type Exchange</th>
+                    <th style='text-align:center'>Symbol</th>
                     <th style="text-align:center">Side</th>
                     <th style="text-align:center">Quantity</th>
                     <th style="text-align:center">Price Open</th>
@@ -68,23 +72,26 @@
                             var tr;
                             $.each(response.positions, function (index, position){
                                 tr = $(`<tr>`);
-                                    tr.append(`<td><a href="/screener/position/${position[1]}">
-                                        ${position[1]}
-                                    </a></td>`);
+                                tr.append(`<td>${position[1]}</td>`);
                                 tr.append(`<td>${position[2]}</td>`);
-                                tr.append(`<td>${position[3]}</td>`);
+                                tr.append(`<td><a href="/screener/position/${position[0]}">
+                                        ${position[3]}
+                                    </a></td>`);
                                 tr.append(`<td>${position[4]}</td>`);
                                 tr.append(`<td>${position[5]}</td>`);
                                 tr.append(`<td>${position[6]}</td>`);
                                 tr.append(`<td>${position[7]}</td>`);
                                 tr.append(`<td>${position[8]}</td>`);
                                 tr.append(`<td>${position[9]}</td>`);
+                                tr.append(`<td>${position[10]}</td>`);
+                                tr.append(`<td>${position[11]}</td>`);
+                                tr.append(`<td>${position[12]}</td>`);
                                 tr.append(`</tr>`)
                                 $('#tblPositions').append(tr); 
                             });
 
                             $.each(response.deals, function (index, deal){
-                                if (deal[9] > 0)
+                                if (deal[10] > 0)
                                 {
                                     tr = $(`<tr class="table-success">`);
                                 } 
@@ -93,17 +100,18 @@
                                     tr = $(`<tr class="table-danger">`);
                                 }
                                 
-                                tr.append(`<td><a href="/screener/positions/${deal[0]}">
-                                        ${deal[1]}
-                                    </a></td>`);
+                                tr.append(`<td>${deal[1]}</td>`);
                                 tr.append(`<td>${deal[2]}</td>`);
-                                tr.append(`<td>${deal[3]}</td>`);
+                                tr.append(`<td><a href="/screener/deals/${deal[0]}">
+                                        ${deal[3]}
+                                    </a></td>`);
                                 tr.append(`<td>${deal[4]}</td>`);
                                 tr.append(`<td>${deal[5]}</td>`);
                                 tr.append(`<td>${deal[6]}</td>`);
                                 tr.append(`<td>${deal[7]}</td>`);
                                 tr.append(`<td>${deal[8]}</td>`);
-                                tr.append(`<td>${deal[9]} %</td>`);
+                                tr.append(`<td>${deal[9]}</td>`);
+                                tr.append(`<td>${deal[10]} %</td>`);
                                 tr.append(`</tr>`)
                                 $('#tblDeals').append(tr); 
                             });
