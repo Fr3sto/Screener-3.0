@@ -6,10 +6,5 @@ register_converter(converters.FloatUrlParameterConverter, 'float')
 
 app_name = 'screener'
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('positions', views.positions, name='positions'),
-    path('deals/<str:id>', views.current_deal, name='current_deal'),
-    path('status_check', views.status_check, name='status_check'),
-    path('position/<str:id>', views.current_position, name='current_position'),
-    path('big_orders', views.big_orders, name='big_orders'),
+    path('', views.index, name='index')
 ]
