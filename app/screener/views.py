@@ -4,7 +4,7 @@ from datetime import datetime
 import ccxt
 import pandas as pd
 
-from screener.database import get_currency, get_order_book
+from screener.database import get_currency, get_order_book, get_status
 
 from screener.exchange import get_last_prices
 
@@ -34,8 +34,9 @@ def get_data_order_book(request):
             is_not_mm = order[6]
             date_start = order[7]
             date_end = order[8]
+            date_get = order[9].strftime("%d/%m/%Y, %H:%M:%S")
             order_book[symbol][type][price] = {'date_start':date_start, 'date_end':date_end, 'pow':pow,
-                                            'is_not_mm':is_not_mm, 'quantity':quantity}
+                                            'is_not_mm':is_not_mm, 'quantity':quantity, 'date_get':date_get}
 
         last_prices = get_last_prices()
 
@@ -54,9 +55,9 @@ def get_data_order_book(request):
                             else:
                                 left_pips_order = 100 - price / best_bid * 100
                                 
-                            time_live = round((order['date_end'] - order['date_start']).seconds / 60)
+                            time_live = round((order['date_end'] - order['date_start']).total_seconds() / 60)
                             if left_pips_order <= 3 and order['is_not_mm'] == True:
-                                good_orders.append([symbol, type, price, order['pow'],time_live, round(left_pips_order,2)])
+                                good_orders.append([symbol, type, price, order['pow'],time_live, round(left_pips_order,2), order['date_get']])
             except Exception as err:
                 print(f"Error {symbol}")
         good_orders = sorted(good_orders, key=lambda x: x[5])
@@ -66,4 +67,18 @@ def get_data_order_book(request):
     except Exception as e:
         print(e)
 
+def index_status(request):
+    return render(request, 'screener/status_check.html')
+
+def get_data_status(request):
     
+    status_db = get_status()
+
+    status_list = []
+
+    for status in status_db:
+        my_list = list(status)
+        my_list[3] = my_list[3].strftime("%d/%m/%Y, %H:%M:%S")
+        status_list.append(my_list)
+    
+    return JsonResponse({'status_list':status_list})

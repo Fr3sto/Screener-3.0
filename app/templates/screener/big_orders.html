@@ -15,6 +15,7 @@
                     <th style="text-align:center">Pow</th>
                     <th style="text-align:center">Time live</th>
                     <th style="text-align:center">Left Pips</th>
+                    <th style="text-align:center">Time Get</th>
                 </tr>
             </thead>
             <tbody>
@@ -52,6 +53,7 @@
                                 tr.append(`<td>${order[3]}</td>`);
                                 tr.append(`<td>${order[4]} minute</td>`);
                                 tr.append(`<td>${order[5]} %</td>`);
+                                tr.append(`<td>${order[6]}</td>`);
                                 tr.append(`</tr>`)
                                 $('#tblOrders').append(tr); 
                             });
