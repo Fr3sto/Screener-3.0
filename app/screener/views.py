@@ -4,10 +4,11 @@ from datetime import datetime
 import ccxt
 import pandas as pd
 
-from screener.database import get_currency, get_order_book, get_status
+from screener.database import get_currency, get_order_book, get_status, get_cubes, get_candles, get_cubes_by_symbol
 
 from screener.exchange import get_last_prices
 
+from screener.charts import chart_with_cubes
 
 def index(request):
     return render(request, 'screener/big_orders.html')
@@ -38,6 +39,7 @@ def get_data_order_book(request):
             order_book[symbol][type][price] = {'date_start':date_start, 'date_end':date_end, 'pow':pow,
                                             'is_not_mm':is_not_mm, 'quantity':quantity, 'date_get':date_get}
 
+        del order_book['USDCUSDT']
         last_prices = get_last_prices()
 
         good_orders = []
@@ -66,6 +68,51 @@ def get_data_order_book(request):
             
     except Exception as e:
         print(e)
+
+def index_cubes(request):
+    return render(request, 'screener/index_cube.html')
+
+
+def current_cube(request, symbol):
+    candles = get_candles(symbol)
+    df_candles = pd.DataFrame(candles, columns=['id','symbol','Open','High','Low','Close','Volume','Date'])
+    cubes = get_cubes_by_symbol(symbol)
+    df_cubes = pd.DataFrame(cubes, columns=['id','symbol','name_cube','Price','Date'])
+    chart = chart_with_cubes(df_candles, df_cubes)
+
+    return render(request, 'screener/current_cubes.html', {'name':symbol,'chart':chart}) 
+
+def get_data_cubes(request):
+    
+    cubes = get_cubes()
+
+    result = dict()
+    for cube in cubes:
+        symbol = cube[1]
+        name_cube = cube[2]
+        price = cube[3]
+        date = cube[4]
+        if symbol in result:
+            if date > result[symbol]['date']:
+                result[symbol]['price'] = price
+                result[symbol]['date'] = date
+        else:
+            result[symbol] = {'name_cube':name_cube,
+                              'price': price,
+                              'date': date}
+
+    res_cube = []
+    now = datetime.now()
+    
+    for symbol, value in result.items():
+        diff = round((now - value['date']).total_seconds() / 60,2)
+        date = value['date'].strftime("%d/%m/%Y %H:%M:%S")
+        res_cube.append([symbol, value['name_cube'], value['price'], date, diff])
+    
+    res_cube = sorted(res_cube, key=lambda x: x[4])
+
+    return JsonResponse({'cubes':res_cube})
+
 
 def index_status(request):
     return render(request, 'screener/status_check.html')

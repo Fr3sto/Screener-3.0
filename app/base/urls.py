@@ -23,5 +23,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('screener/', include('screener.urls')),
     path('get_data_order_book', views.get_data_order_book, name='get_data_order_book'),
+    path('get_data_cubes', views.get_data_cubes, name='get_data_cubes'),
     path('get_data_status', views.get_data_status, name='get_data_status')
 ]

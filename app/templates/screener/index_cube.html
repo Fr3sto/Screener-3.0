@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}
+    Order Book
+{% endblock title %}
+{% block content %}
+    <h1 style ='text-align:center'>Cubes</h1>
+    <div class="table-responsive">
+        <table id="tblCubes"
+            class="table mt-2 table-bordered table-striped table-hover table-responsive">
+            <thead class="table-dark">
+                <tr>
+                    <th style="text-align:center;" width="10%">Symbol</th>
+                    <th style="text-align:center;">Name Cube</th>
+                    <th style="text-align:center">Price</th>
+                    <th style="text-align:center">Date</th>
+                    <th style="text-align:center">Time left</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    
+            
+    <script>
+        $(document).ready(function(){
+            setInterval(function(){
+                $.ajax({
+                    type: 'GET',
+                    url : "/get_data_cubes",
+                    success: function(response) {
+                        
+                        $('#tblCubes tbody').empty();
+    
+                        try{
+                            var tr;
+                            
+                            $.each(response.cubes, function (index, cube){
+                                tr = $(`<tr>`);
+                                tr.append(`<td><a href="/screener/cubes/${cube[0]}">
+                                    ${cube[0]}
+                                </a></td>`);
+                                tr.append(`<td>${cube[1]}</td>`);
+                                tr.append(`<td>${cube[2]}</td>`);
+                                tr.append(`<td>${cube[3]}</td>`);
+                                tr.append(`<td>${cube[4]} minute</td>`);
+                                tr.append(`</tr>`)
+                                $('#tblCubes').append(tr); 
+                            });
+
+                        }
+                        catch(err){
+                            console.log(err);
+                        }
+                    },
+                    error : function(response){
+                        
+                    }
+                });
+            },3000);
+        })
+    </script>
+{% endblock content %}
