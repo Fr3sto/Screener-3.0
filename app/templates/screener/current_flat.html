@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 {% block title %}
-    Chart
+    {{name}}
 {% endblock title %}
 {% block content %}
     <h1 style='text-align:center'>{{name}}</h1>
-    {{ chart|safe }}
+    <div class='row' style='height:800px;'>
+        {{ chart|safe }}
+    </div>
+    
 {% endblock content %}

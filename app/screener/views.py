@@ -1,117 +1,80 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from datetime import datetime
+from datetime import datetime, timedelta
 import ccxt
 import pandas as pd
 
-from screener.database import get_currency, get_order_book, get_status, get_cubes, get_candles, get_cubes_by_symbol
+from screener.database import get_status, get_all_flat, get_flat_by_id
 
-from screener.exchange import get_last_prices
+from screener.exchange import get_last_prices, get_all_min_step, get_candles_by_date
 
-from screener.charts import chart_with_cubes
+from screener.charts import chart_with_flat
 
 def index(request):
-    return render(request, 'screener/big_orders.html')
+    return render(request, 'screener/all_flats.html')
 
-all_currency = get_currency()
-
-def get_data_order_book(request):
+def get_data_flat(request):
     try:
-
-        
-        order_book = dict()
-        
-        for symbol in all_currency.keys():
-            order_book[symbol] = {'asks':{}, 'bids':{}}
-
-        order_book_db = get_order_book()
-
-        for order in order_book_db:
-            symbol = order[1]
-            type = order[2]
-            price = order[3]
-            pow = order[4]
-            quantity = order[5]
-            is_not_mm = order[6]
-            date_start = order[7]
-            date_end = order[8]
-            date_get = order[9].strftime("%d/%m/%Y, %H:%M:%S")
-            order_book[symbol][type][price] = {'date_start':date_start, 'date_end':date_end, 'pow':pow,
-                                            'is_not_mm':is_not_mm, 'quantity':quantity, 'date_get':date_get}
-
-        del order_book['USDCUSDT']
+        all_flats = get_all_flat()
         last_prices = get_last_prices()
+        good_flats = []
 
-        good_orders = []
-        for symbol, types in order_book.items():
-            try:
-                best_bid = last_prices[symbol]['best_bid']
-                best_ask = last_prices[symbol]['best_ask']
-                for type, prices in types.items():
-                    for price, order in prices.items():
-                        order_count_decimal = str(round(price / all_currency[symbol]['min_step']))
-                        left_pips_order = 0
-                        if order_count_decimal[-1] == '0':
-                            if type == 'asks':
-                                left_pips_order = 100 - best_ask / price * 100
-                            else:
-                                left_pips_order = 100 - price / best_bid * 100
-                                
-                            time_live = round((order['date_end'] - order['date_start']).total_seconds() / 60)
-                            if left_pips_order <= 3 and order['is_not_mm'] == True:
-                                good_orders.append([symbol, type, price, order['pow'],time_live, round(left_pips_order,2), order['date_get']])
-            except Exception as err:
-                print(f"Error {symbol}")
-        good_orders = sorted(good_orders, key=lambda x: x[5])
+        all_currency = get_all_min_step()
 
-        return JsonResponse({'orders':good_orders})
+        now = datetime.now()
+
+        for flat in all_flats:
+            id = flat[0]
+            symbol = flat[1]
+            tf = flat[2]
+            side_flat = flat[3]
+            up_range = flat[8]
+            down_range = flat[9]
+            count_retest = flat[10]
+            date_last_retest = flat[11]
+            date_end = flat[7]
+            best_bid = last_prices[symbol]['best_bid']
+            best_ask = last_prices[symbol]['best_ask']
+            left_pips = 0
+            if side_flat == 1:
+                price = up_range
+                left_pips = 100 - price / best_bid * 100
+            else:
+                price = down_range
+                left_pips = 100 - best_ask / price * 100
+
+            if left_pips < 10:
+                time_live = round((datetime.now() - date_end).total_seconds() / 60)
+                time_last_retest = round((now - date_last_retest).total_seconds() / 60)
+                good_flats.append([id,symbol,tf,side_flat,count_retest,time_last_retest, round(left_pips,2)])
+
+        good_flats = sorted(good_flats, key=lambda x: x[5])
+
+
+        return JsonResponse({'flats':good_flats})
             
     except Exception as e:
         print(e)
 
-def index_cubes(request):
-    return render(request, 'screener/index_cube.html')
+def current_flat(request, id):
+    flat = get_flat_by_id(id)
 
-
-def current_cube(request, symbol):
-    candles = get_candles(symbol)
-    df_candles = pd.DataFrame(candles, columns=['id','symbol','Open','High','Low','Close','Volume','Date'])
-    cubes = get_cubes_by_symbol(symbol)
-    df_cubes = pd.DataFrame(cubes, columns=['id','symbol','name_cube','Price','Date'])
-    chart = chart_with_cubes(df_candles, df_cubes)
-
-    return render(request, 'screener/current_cubes.html', {'name':symbol,'chart':chart}) 
-
-def get_data_cubes(request):
-    
-    cubes = get_cubes()
-
-    result = dict()
-    for cube in cubes:
-        symbol = cube[1]
-        name_cube = cube[2]
-        price = cube[3]
-        date = cube[4]
-        if symbol in result:
-            if date > result[symbol]['date']:
-                result[symbol]['price'] = price
-                result[symbol]['date'] = date
-        else:
-            result[symbol] = {'name_cube':name_cube,
-                              'price': price,
-                              'date': date}
-
-    res_cube = []
+    flat = flat[0]
+    tf = flat[2]
+    date_start = flat[6] - timedelta(days=1)
     now = datetime.now()
-    
-    for symbol, value in result.items():
-        diff = round((now - value['date']).total_seconds() / 60,2)
-        date = value['date'].strftime("%d/%m/%Y %H:%M:%S")
-        res_cube.append([symbol, value['name_cube'], value['price'], date, diff])
-    
-    res_cube = sorted(res_cube, key=lambda x: x[4])
+    df_candles = get_candles_by_date(flat[1], date_start, now)
 
-    return JsonResponse({'cubes':res_cube})
+    if tf == 240:
+        df_candles = df_candles.groupby([df_candles['Date'].dt.floor('4H')]).agg({'Open' : 'first','High':'max','Low':'min','Close':'last','Volume':'sum'}).reset_index()
+    if tf == 60:
+        df_candles = df_candles.groupby([df_candles['Date'].dt.floor('H')]).agg({'Open' : 'first','High':'max','Low':'min','Close':'last','Volume':'sum'}).reset_index()
+    else:
+        df_candles = df_candles.groupby([df_candles['Date'].dt.floor(str(tf) + 'T')]).agg({'Open' : 'first','High':'max','Low':'min','Close':'last','Volume':'sum'}).reset_index()
+
+    chart = chart_with_flat(df_candles, flat)
+
+    return render(request, 'screener/current_flat.html', {'name':flat[1],'chart':chart}) 
 
 
 def index_status(request):
