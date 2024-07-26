@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 from screener import views
 
@@ -24,4 +26,4 @@ urlpatterns = [
     path('screener/', include('screener.urls')),
     path('get_data_flat', views.get_data_flat, name='get_data_flat'),
     path('get_data_status', views.get_data_status, name='get_data_status')
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

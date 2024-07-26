@@ -3,7 +3,7 @@ version: '3.8'
 services:
   web:
     build: ./app
-    command: bash -c "gunicorn base.wsgi:application --bind 0.0.0.0:8000  --timeout 600"
+    command: bash -c "python manage.py collectstatic --noinput && gunicorn base.wsgi:application --bind 0.0.0.0:8000  --timeout 600"
     volumes:
       - ./app:/usr/src/app
       - static_volume:/usr/src/app/staticfiles

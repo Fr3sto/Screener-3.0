@@ -1,5 +1,5 @@
 from psycopg2 import pool
-from sshtunnel import SSHTunnelForwarder
+# from sshtunnel import SSHTunnelForwarder
 
 # server =  SSHTunnelForwarder(
 #     ('31.129.99.176', 22), #Remote server IP and SSH port
@@ -44,6 +44,15 @@ def get_currency():
         
     return symbols_ob
 
+def get_order_book_by_symbol(symbol):
+    connection = postgreSQL_pool.getconn()
+    cursor = connection.cursor()
+    cursor.execute('SELECT * from Order_Book where symbol = %s',(symbol,))
+    result = cursor.fetchall()
+    cursor.close()
+    postgreSQL_pool.putconn(connection)
+    return result
+
 def get_flat_by_id(id):
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
@@ -65,7 +74,7 @@ def get_all_flat():
 def get_order_book():
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
-    cursor.execute('SELECT * from Order_Book where extract(epoch from date_end - date_start) / 60 >= 60')
+    cursor.execute('SELECT * from Order_Book where extract(epoch from date_end - date_start) / 60 >= 20')
     result = cursor.fetchall()
     cursor.close()
     postgreSQL_pool.putconn(connection)
