@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 
-from screener.database import get_all_impulses
+from screener.database import get_all_impulses, get_all_levels, get_all_order_book
 
 
 def collect_all_data_for_screener():
@@ -16,6 +16,10 @@ def collect_all_data_for_screener():
     impulse_list =  get_all_impulses()
 
     result = dict()
+
+    levels = get_all_levels()
+
+    all_orders = get_all_order_book()
 
     for impulse in impulse_list:
         symbol = impulse[1]
@@ -38,13 +42,27 @@ def collect_all_data_for_screener():
             down_price = price_end
             down_price -= down_price * 0.01
 
+        count_levels = 0
+
+        for level in levels:
+            if level[1] == symbol and level[2] == tf:
+                count_levels += 1
+
+
+        count_orders = 0
+
+        for order in all_orders:
+            if order[1] == symbol and order[3] < up_price and order[3] > down_price:
+                if (order[8] - order[7]).total_seconds() / 60 > 30:
+                    count_orders += 1
+
 
         if symbol in result:
-            result[symbol]['tf'][tf] = {"text":"График", "type": type, "count_orders" : 0, 'price_start':price_start,
-                                              'price_end':price_end}
+            result[symbol]['tf'][tf] = {"text":"График", "type": type, "count_orders" : count_orders, 'price_start':price_start,
+                                              'price_end':price_end, 'count_levels': count_levels}
         else:
-            result[symbol] = {'tf' : {tf : {"text":"График", "type": type, "count_orders" : 0, 'price_start':price_start,
-                                              'price_end':price_end}}}
+            result[symbol] = {'tf' : {tf : {"text":"График", "type": type, "count_orders" : count_orders, 'price_start':price_start,
+                                              'price_end':price_end, 'count_levels': count_levels}}}
             
     for symbol, value in result.items():
         if not 5 in value['tf']:
@@ -80,7 +98,7 @@ def collect_all_data_for_screener():
 
 
 
-from screener.database import get_candles_by_symbol_tf, get_impulse_opened
+from screener.database import get_candles_by_symbol_tf, get_impulse_opened, get_levels_by_symbol_tf, get_order_book_by_symbol
 
 from screener.charts import get_chart_with_impulse
 
@@ -88,7 +106,9 @@ def get_currency_chart_with_impulse(symbol, tf):
     candles = get_candles_by_symbol_tf(symbol, tf)
     df_candles = get_df_from_candles(candles)
     impulse = get_impulse_opened(symbol, tf)[0]
-    return get_chart_with_impulse(df_candles, impulse, tf,symbol)
+    levels = get_levels_by_symbol_tf(symbol, tf)
+    orders = get_order_book_by_symbol(symbol)
+    return get_chart_with_impulse(df_candles, impulse,levels,orders, tf,symbol)
 
 
 def get_df_from_candles(candles):

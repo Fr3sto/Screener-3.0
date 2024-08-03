@@ -77,7 +77,7 @@ def chart_with_flat(df_candles, flat):#, order_book):
     return fig.to_html()
 
 
-def get_chart_with_impulse(df, impulse, tf, symbol):
+def get_chart_with_impulse(df, impulse,levels,orders, tf, symbol):
     #fig = px.line(df, x = 'Date', y = 'Close')
 
     fig = go.Figure(data=[go.Candlestick(x=df['Date'],
@@ -110,5 +110,53 @@ def get_chart_with_impulse(df, impulse, tf, symbol):
     fig.add_shape(type="rect",
                           x0=impulse[5], y0=impulse[4], x1=dateEnd, y1=impulse[6],
                           line=dict(color=color))
+    
+    symbol = impulse[1]
+    type = impulse[2]
+    tf = impulse[3]
+    price_start = impulse[4]
+    price_end = impulse[6]
+
+    up_price = 0
+    down_price = 0
+
+    if type == 'L':
+        up_price = price_end
+        up_price += up_price * 0.01
+
+        down_price = price_start
+    else:
+        up_price = price_start
+
+        down_price = price_end
+        down_price -= down_price * 0.01
+    
+    for level in levels:
+        price = level[3]
+        type = level[4]
+        date_start = level[5]
+
+        color = ''
+        if type == 1:
+            color = 'Red'
+        else:
+            color = 'Green'
+        fig.add_shape(type="line",
+                            x0=date_start, y0=price, x1=df['Date'].iloc[-1], y1=price,
+                            line=dict(color=color, width=3))
+        
+
+    for order in orders:
+        price = order[3]
+        type = order[2]
+        date_start = order[7]
+        is_not_mm = order[6]
+
+        color = 'Red' if type == 'asks' else 'Green'
+        if order[1] == symbol and order[3] < up_price and order[3] > down_price:
+            if (order[8] - order[7]).total_seconds() / 60 > 30:
+                fig.add_shape(type="line",
+                                x0=date_start, y0=price, x1=df['Date'].iloc[-1], y1=price,
+                                line=dict(color=color, width=3, dash="dash"))
 
     return fig.to_html()

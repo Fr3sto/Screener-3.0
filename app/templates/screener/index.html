@@ -16,6 +16,7 @@
                 <th>Order Ask</th> {% endcomment %}
                 {% for el in list_tf %}
                     <th>Have Impulse</th>
+                    <th>Have Levels</th>
                     <th>Have Order</th>
                     <th>Left Order Percent</th>
                 {% endfor %}
@@ -49,12 +50,16 @@
                                 </a>
                             </td>
                             <td class="{{ value|color_filter_count_level }}">
-                                <p style="{{ value|color_filter_count_level_text }} text-align: center">{{ value.count_orders }}</p>
+                                <p style="{{ value|color_filter_count_level_text }} text-align: center">{{ value.count_levels }}</p>
                             </td>
-                            <td class="{{ value|color_filter_count_level }}">
-                                <p style="{{ value|color_filter_count_level_text }} text-align: center">{{ value.left_pips_order }} %</p>
+                            <td class="{{ value|color_filter_count_order }}">
+                                <p style="{{ value|color_filter_count_order_text }} text-align: center">{{ value.count_orders }}</p>
+                            </td>
+                            <td class="{{ value|color_filter_count_order }}">
+                                <p style="{{ value|color_filter_count_order_text }} text-align: center">{{ value.left_pips_order }} %</p>
                             </td>
                         {% else %}
+                            <td></td>
                             <td></td>
                             <td></td>
                             <td></td>

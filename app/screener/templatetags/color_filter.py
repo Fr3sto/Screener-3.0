@@ -19,6 +19,29 @@ def color_filter_impulse_text(type):
     
 @register.filter()
 def color_filter_count_level(value):
+    if value['count_levels'] != '':
+        if value['count_levels'] > 0:
+            if value['type'] == 'L':
+                return 'bg-success'
+            else:
+                return 'bg-danger'
+        else:
+            return ''
+    else:
+        return ''
+        
+@register.filter()
+def color_filter_count_level_text(value):
+    if value['count_levels'] != '':
+        if value['count_levels'] > 0:
+            return 'color:white;'
+        else:
+            return ''
+    else:
+        return ''
+    
+@register.filter()
+def color_filter_count_order(value):
     if value['count_orders'] != '':
         if value['count_orders'] > 0:
             if value['type'] == 'L':
@@ -31,7 +54,7 @@ def color_filter_count_level(value):
         return ''
         
 @register.filter()
-def color_filter_count_level_text(value):
+def color_filter_count_order_text(value):
     if value['count_orders'] != '':
         if value['count_orders'] > 0:
             return 'color:white;'
