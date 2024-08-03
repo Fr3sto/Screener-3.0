@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}
+    Impulse Screener
+{% endblock title %}
+{% block content %}
+    <h1 style ='text-align:center'>Bybit Futures</h1>
+    <table class="table table-dark  table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th rowspan="2">Name</th>
+                {% comment %} <th colspan="2">1 min Orders</th> {% endcomment %}
+                {% for tf in list_tf %}<th colspan="3">{{ tf }} min</th>{% endfor %}
+            </tr>
+            <tr>
+                {% comment %} <th>Order Bid</th>
+                <th>Order Ask</th> {% endcomment %}
+                {% for el in list_tf %}
+                    <th>Have Impulse</th>
+                    <th>Have Order</th>
+                    <th>Left Order Percent</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% load color_filter %}
+            {% for key, value in data.items %}
+                <tr>
+                    <td>
+                        {% comment %} <a style="color:black; text-align: center" href="{% url "screener:orders_chart" key %}">
+                            <p style='font-size:18px'>{{ key }}</p>
+                        </a> {% endcomment %}
+                        <p style='font-size:18px'>
+                            {{ key }}
+                        </p>
+                    </td>
+                    {% comment %} <td class="{{ value.orders.bids.period|color_filter_bids }}">
+                        <p style="{{ value.orders.bids.period|color_filter_bids_asks_text }}; text-align: center">{{ value.orders.bids.period }} - {{ value.orders.bids.pow }}</p>
+                    </td>
+                    <td class="{{ value.orders.asks.period|color_filter_asks }}">
+                        <p style="{{ value.orders.asks.period|color_filter_bids_asks_text }}; text-align: center">{{ value.orders.asks.period }} - {{ value.orders.asks.pow }}</p>
+                    </td> {% endcomment %}
+                    {% for keyTF, value in value.tf.items %}
+                        {% if value.text == "График" %}
+                            <td class="{{ value.type|color_filter_impulse }}">
+                                <a style="{{ value.type|color_filter_impulse_text }};
+                                          text-align: center"
+                                   href="{% url "screener:currency_chart" key keyTF %}">
+                                    <p>{{ value.text }}</p>
+                                </a>
+                            </td>
+                            <td class="{{ value|color_filter_count_level }}">
+                                <p style="{{ value|color_filter_count_level_text }} text-align: center">{{ value.count_orders }}</p>
+                            </td>
+                            <td class="{{ value|color_filter_count_level }}">
+                                <p style="{{ value|color_filter_count_level_text }} text-align: center">{{ value.left_pips_order }} %</p>
+                            </td>
+                        {% else %}
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}

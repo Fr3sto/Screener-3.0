@@ -1,5 +1,5 @@
 from psycopg2 import pool
-# from sshtunnel import SSHTunnelForwarder
+from sshtunnel import SSHTunnelForwarder
 
 # server =  SSHTunnelForwarder(
 #     ('31.129.99.176', 22), #Remote server IP and SSH port
@@ -24,62 +24,27 @@ postgreSQL_pool = pool.ThreadedConnectionPool(1, 100, user="fr3sto",
 
 # GET
 
-def get_currency():
+def get_all_currency():
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
-    cursor.execute('SELECT * FROM currency')
+    cursor.execute('SELECT * FROM All_Currency')
     result = cursor.fetchall()
+    res_currency = dict()
+
+    for res in result:
+        res_currency[res[1]] = {'min_step':res[2], 'min_qty':res[3]}
     cursor.close()
-    connection.close()
     postgreSQL_pool.putconn(connection)
+    return res_currency
 
-    symbols_ob = dict()
-
-    for curr in result:
-        symbol = curr[1]
-        min_step = curr[2]
-        
-        symbols_ob[symbol] = {'min_step':float(min_step)}
-
-        
-    return symbols_ob
-
-def get_order_book_by_symbol(symbol):
+def get_all_impulses():
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
-    cursor.execute('SELECT * from Order_Book where symbol = %s',(symbol,))
+    cursor.execute('SELECT * FROM Impulse')
     result = cursor.fetchall()
     cursor.close()
     postgreSQL_pool.putconn(connection)
     return result
-
-def get_flat_by_id(id):
-    connection = postgreSQL_pool.getconn()
-    cursor = connection.cursor()
-    cursor.execute('SELECT * from Flat where id = %s',(id,))
-    result = cursor.fetchall()
-    cursor.close()
-    postgreSQL_pool.putconn(connection)
-    return result
-
-def get_all_flat():
-    connection = postgreSQL_pool.getconn()
-    cursor = connection.cursor()
-    cursor.execute('SELECT * from Flat')
-    result = cursor.fetchall()
-    cursor.close()
-    postgreSQL_pool.putconn(connection)
-    return result
-
-def get_order_book():
-    connection = postgreSQL_pool.getconn()
-    cursor = connection.cursor()
-    cursor.execute('SELECT * from Order_Book where extract(epoch from date_end - date_start) / 60 >= 20')
-    result = cursor.fetchall()
-    cursor.close()
-    postgreSQL_pool.putconn(connection)
-    return result
-
 
 def get_status():
     connection = postgreSQL_pool.getconn()
@@ -90,28 +55,19 @@ def get_status():
     postgreSQL_pool.putconn(connection)
     return result
 
-def get_cubes():
+def get_candles_by_symbol_tf(symbol,tf):
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
-    cursor.execute('SELECT * from Cubes')
+    cursor.execute('SELECT * FROM Candles where Symbol = %s and TF = %s',(symbol,tf))
     result = cursor.fetchall()
     cursor.close()
     postgreSQL_pool.putconn(connection)
     return result
 
-def get_cubes_by_symbol(symbol):
+def get_impulse_opened(symbol, tf):
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
-    cursor.execute('SELECT * from Cubes where symbol = %s', (symbol, ))
-    result = cursor.fetchall()
-    cursor.close()
-    postgreSQL_pool.putconn(connection)
-    return result
-
-def get_candles(symbol):
-    connection = postgreSQL_pool.getconn()
-    cursor = connection.cursor()
-    cursor.execute('SELECT * FROM Candles where Symbol = %s order by Date asc',(symbol,) )
+    cursor.execute('SELECT * FROM Impulse Where Symbol = %s and TF = %s', (symbol, tf))
     result = cursor.fetchall()
     cursor.close()
     postgreSQL_pool.putconn(connection)

@@ -24,6 +24,5 @@ from screener import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('screener/', include('screener.urls')),
-    path('get_data_flat', views.get_data_flat, name='get_data_flat'),
     path('get_data_status', views.get_data_status, name='get_data_status')
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

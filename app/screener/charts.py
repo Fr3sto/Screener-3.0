@@ -75,3 +75,40 @@ def chart_with_flat(df_candles, flat):#, order_book):
     fig.update_layout(yaxis=dict(range=[0, 4*df_candles['Volume'].max()]))
 
     return fig.to_html()
+
+
+def get_chart_with_impulse(df, impulse, tf, symbol):
+    #fig = px.line(df, x = 'Date', y = 'Close')
+
+    fig = go.Figure(data=[go.Candlestick(x=df['Date'],
+                                         open=df['Open'], high=df['High'],
+                                         low=df['Low'], close=df['Close'])])
+    
+    
+    fig.update_layout(xaxis_rangeslider_visible=False,  template = 'plotly_dark')
+    add_min = 0
+    if tf == 5:
+        add_min = 15
+    elif tf == 15:
+        add_min = 60
+    elif tf == 30:
+        add_min = 120
+    elif tf == 60:
+        add_min = 240
+
+    dateEnd = impulse[7] + timedelta(minutes=add_min)
+    
+    need_type_level = 0
+    color = ''
+    if impulse[2] == 'L':
+        color = 'Green'
+        need_type_level = 2
+    else:
+        color = 'Red'
+        need_type_level = 1
+
+    fig.add_shape(type="rect",
+                          x0=impulse[5], y0=impulse[4], x1=dateEnd, y1=impulse[6],
+                          line=dict(color=color))
+
+    return fig.to_html()

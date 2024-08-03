@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}
+    Chart
+{% endblock title %}
+{% block content %}
+    <div class='row' style='height:800px;'>
+        {{ chart|safe }}
+    </div>
+{% endblock content %}
