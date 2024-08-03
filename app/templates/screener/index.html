@@ -18,7 +18,6 @@
                     <th>Have Impulse</th>
                     <th>Have Levels</th>
                     <th>Have Order</th>
-                    <th>Left Order Percent</th>
                 {% endfor %}
             </tr>
         </thead>
@@ -55,11 +54,7 @@
                             <td class="{{ value|color_filter_count_order }}">
                                 <p style="{{ value|color_filter_count_order_text }} text-align: center">{{ value.count_orders }}</p>
                             </td>
-                            <td class="{{ value|color_filter_count_order }}">
-                                <p style="{{ value|color_filter_count_order_text }} text-align: center">{{ value.left_pips_order }} %</p>
-                            </td>
                         {% else %}
-                            <td></td>
                             <td></td>
                             <td></td>
                             <td></td>
