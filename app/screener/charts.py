@@ -113,6 +113,17 @@ def get_chart_with_impulse(df, impulse,levels,orders_future,orders_spot, tf, sym
     price_start = impulse[4]
     price_end = impulse[6]
 
+    down_range = impulse[9]
+    up_range = impulse[10]
+
+    fig.add_trace(
+        go.Scatter(x=[dateEnd, dateEnd,
+                        df['Date'].iloc[-1], df['Date'].iloc[-1], dateEnd],
+                    y=[down_range, up_range, up_range, down_range, down_range],
+                    line=dict(color='rgba(139,0,255, 0.3)'), fillcolor='rgba(139,0,255, 0.2)',
+                    fill="toself", mode='lines'))
+
+
     up_price = 0
     down_price = 0
 
