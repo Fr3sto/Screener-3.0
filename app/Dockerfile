@@ -22,4 +22,4 @@ RUN pip install -r requirements.txt
 # copy project
 COPY . .
 
-RUN python manage.py collectstatic --noinput && 
+RUN python manage.py collectstatic --noinput 

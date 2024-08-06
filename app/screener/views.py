@@ -30,7 +30,7 @@ from screener.services import get_currency_chart_with_impulse
 
 def currency_chart(request, symbol, tf):
     print(symbol, tf)
-    chart = get_currency_chart_with_impulse(symbol,tf)
+    chart = get_currency_chart_with_impulse(symbol,tf, currency_list['Bybit']['Future'][symbol]['min_step'])
     return render(request, 'screener/currency_chart.html', {'chart':chart})
 
 

@@ -77,15 +77,9 @@ def chart_with_flat(df_candles, flat):#, order_book):
     return fig.to_html()
 
 
-def get_chart_with_impulse(df, impulse,levels,orders, tf, symbol):
+def get_chart_with_impulse(df, impulse,levels,orders_future,orders_spot, tf, symbol, min_step):
     #fig = px.line(df, x = 'Date', y = 'Close')
-
-    fig = go.Figure(data=[go.Candlestick(x=df['Date'],
-                                         open=df['Open'], high=df['High'],
-                                         low=df['Low'], close=df['Close'])])
     
-    
-    fig.update_layout(xaxis_rangeslider_visible=False,  template = 'plotly_dark')
     add_min = 0
     if tf == 5:
         add_min = 15
@@ -95,6 +89,18 @@ def get_chart_with_impulse(df, impulse,levels,orders, tf, symbol):
         add_min = 120
     elif tf == 60:
         add_min = 240
+
+    impulse_start = impulse[5]
+    impulse_end = impulse[7] + timedelta(minutes=add_min)
+    impulse_time = (impulse_end - impulse_start).total_seconds() / 60
+    df = df[df['Date'] > impulse_start - timedelta(minutes=impulse_time * 2)]
+    fig = go.Figure(data=[go.Candlestick(x=df['Date'],
+                                         open=df['Open'], high=df['High'],
+                                         low=df['Low'], close=df['Close'])])
+    
+    
+    fig.update_layout(xaxis_rangeslider_visible=False,  template = 'plotly_dark')
+    
 
     dateEnd = impulse[7] + timedelta(minutes=add_min)
     
@@ -146,17 +152,59 @@ def get_chart_with_impulse(df, impulse,levels,orders, tf, symbol):
                             line=dict(color=color, width=3))
         
 
-    for order in orders:
-        price = order[3]
-        type = order[2]
-        date_start = order[7]
-        is_not_mm = order[6]
+    for order in orders_future:
+        price = order[5]
+        type = order[4]
+        date_start = order[9]
+        is_not_mm = order[8]
 
         color = 'Red' if type == 'asks' else 'Green'
-        if order[1] == symbol and order[3] < up_price and order[3] > down_price:
-            if (order[8] - order[7]).total_seconds() / 60 > 30:
-                fig.add_shape(type="line",
-                                x0=date_start, y0=price, x1=df['Date'].iloc[-1], y1=price,
-                                line=dict(color=color, width=3, dash="dash"))
+        if order[3] == symbol:
+            if price < up_price and price > down_price:
+                if (order[10] - date_start).total_seconds() / 60 > 30:
+                    fig.add_shape(type="line",
+                                    x0=date_start, y0=price, x1=df['Date'].iloc[-1], y1=price,
+                                    line=dict(color=color, width=3, dash="dash"))
+                    diff_mins = (df['Date'].iloc[-1] - date_start).total_seconds() / 2
+                    fig.add_annotation(
+                        x=date_start + timedelta(seconds=diff_mins),  # Положение аннотации по оси x
+                        y=price + min_step,  # Положение аннотации по оси y (можно чуть выше линии)
+                        text="future",  # Текст аннотации
+                        #showarrow=True,  # Показывать стрелку
+                        arrowhead=2,  # Стиль стрелки
+                        # ax=0,  # Смещение аннотации по оси x
+                        # ay=-30,  # Смещение аннотации по оси y
+                        # bgcolor="white",  # Цвет фона аннотации
+                        # bordercolor="black",  # Цвет границы аннотации
+                        borderwidth=1  # Ширина границы аннотации
+                    )
+                
+    for order in orders_spot:
+        price = order[5]
+        type = order[4]
+        date_start = order[9]
+        is_not_mm = order[8]
+
+        color = 'Red' if type == 'asks' else 'Green'
+        if order[3] == symbol.split('USDT')[0] + '/USDT':
+            if order[5] < up_price and order[5] > down_price:
+                if (order[10] - order[9]).total_seconds() / 60 > 30:
+                    fig.add_shape(type="line",
+                                    x0=date_start, y0=price, x1=df['Date'].iloc[-1], y1=price,
+                                    line=dict(color=color, width=3, dash="dash"))
+                    
+                    diff_mins = (df['Date'].iloc[-1] - date_start).total_seconds() / 2
+                    fig.add_annotation(
+                        x=date_start + timedelta(seconds=diff_mins),  # Положение аннотации по оси x
+                        y=price,  # Положение аннотации по оси y (можно чуть выше линии)
+                        text="spot",  # Текст аннотации
+                        showarrow=True,  # Показывать стрелку
+                        #arrowhead=2,  # Стиль стрелки
+                        ax=0,  # Смещение аннотации по оси x
+                        #ay=-30,  # Смещение аннотации по оси y
+                        # Цвет границы аннотации
+                        borderwidth=1  # Ширина границы аннотации
+                    )
+                    
 
     return fig.to_html()

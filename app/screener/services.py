@@ -52,9 +52,24 @@ def collect_all_data_for_screener():
         count_orders = 0
 
         for order in all_orders:
-            if order[1] == symbol and order[3] < up_price and order[3] > down_price:
-                if (order[8] - order[7]).total_seconds() / 60 > 30:
-                    count_orders += 1
+            exch = order[1]
+            type_exch = order[2]
+            symbol_order = order[3]
+            price_order = order[5]
+            date_start = order[9]
+            date_end = order[10]
+            if symbol_order == 'LTCUSDT':
+                pass
+            if type_exch == 'Future':
+                if symbol_order == symbol and price_order < up_price and price_order > down_price:
+                    if (date_end - date_start).total_seconds() / 60 > 30:
+                        count_orders += 1
+            else:
+                curr_symbol = symbol.split('USDT')[0] + '/USDT'
+                if symbol_order == curr_symbol and price_order < up_price and price_order > down_price:
+                    if (date_end - date_start).total_seconds() / 60 > 30:
+                        count_orders += 1
+            
 
 
         if symbol in result:
@@ -102,13 +117,14 @@ from screener.database import get_candles_by_symbol_tf, get_impulse_opened, get_
 
 from screener.charts import get_chart_with_impulse
 
-def get_currency_chart_with_impulse(symbol, tf):
+def get_currency_chart_with_impulse(symbol, tf, min_step):
     candles = get_candles_by_symbol_tf(symbol, tf)
     df_candles = get_df_from_candles(candles)
     impulse = get_impulse_opened(symbol, tf)[0]
     levels = get_levels_by_symbol_tf(symbol, tf)
-    orders = get_order_book_by_symbol(symbol)
-    return get_chart_with_impulse(df_candles, impulse,levels,orders, tf,symbol)
+    orders_future = get_order_book_by_symbol(symbol)
+    orders_spot = get_order_book_by_symbol(symbol.split('USDT')[0] + '/USDT')
+    return get_chart_with_impulse(df_candles, impulse,levels,orders_future,orders_spot, tf,symbol, min_step)
 
 
 def get_df_from_candles(candles):

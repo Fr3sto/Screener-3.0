@@ -29,13 +29,28 @@ def get_all_currency():
     cursor = connection.cursor()
     cursor.execute('SELECT * FROM All_Currency')
     result = cursor.fetchall()
-    res_currency = dict()
-
-    for res in result:
-        res_currency[res[1]] = {'min_step':res[2], 'min_qty':res[3]}
     cursor.close()
+    connection.close()
     postgreSQL_pool.putconn(connection)
-    return res_currency
+
+    symbols_ob = dict()
+
+    for curr in result:
+        exchange = curr[1]
+        type = curr[2]
+        symbol = curr[3]
+        min_step = curr[4]
+        
+        if not exchange in symbols_ob:
+            symbols_ob[exchange] = dict()
+        
+        if not type in symbols_ob[exchange]:
+            symbols_ob[exchange][type] = dict()
+
+        symbols_ob[exchange][type][symbol] = {'min_step':float(min_step)}
+
+        
+    return symbols_ob
 
 def get_all_impulses():
     connection = postgreSQL_pool.getconn()
@@ -76,7 +91,7 @@ def get_impulse_opened(symbol, tf):
 def get_all_order_book():
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
-    cursor.execute('SELECT * FROM Order_Book')
+    cursor.execute('SELECT * FROM All_Order_Book')
     result = cursor.fetchall()
     cursor.close()
     postgreSQL_pool.putconn(connection)
@@ -85,7 +100,7 @@ def get_all_order_book():
 def get_order_book_by_symbol(symbol):
     connection = postgreSQL_pool.getconn()
     cursor = connection.cursor()
-    cursor.execute('SELECT * FROM Order_Book WHERE Symbol = %s',(symbol,))
+    cursor.execute('SELECT * FROM All_Order_Book WHERE Symbol = %s',(symbol,))
     result = cursor.fetchall()
     cursor.close()
     postgreSQL_pool.putconn(connection)
