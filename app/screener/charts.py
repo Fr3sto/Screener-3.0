@@ -80,18 +80,8 @@ def chart_with_flat(df_candles, flat):#, order_book):
 def get_chart_with_impulse(df, impulse,levels,orders_future,orders_spot, tf, symbol, min_step):
     #fig = px.line(df, x = 'Date', y = 'Close')
     
-    add_min = 0
-    if tf == 5:
-        add_min = 15
-    elif tf == 15:
-        add_min = 60
-    elif tf == 30:
-        add_min = 120
-    elif tf == 60:
-        add_min = 240
-
     impulse_start = impulse[5]
-    impulse_end = impulse[7] + timedelta(minutes=add_min)
+    impulse_end = impulse[7]
     impulse_time = (impulse_end - impulse_start).total_seconds() / 60
     df = df[df['Date'] > impulse_start - timedelta(minutes=impulse_time * 2)]
     fig = go.Figure(data=[go.Candlestick(x=df['Date'],
@@ -102,7 +92,7 @@ def get_chart_with_impulse(df, impulse,levels,orders_future,orders_spot, tf, sym
     fig.update_layout(xaxis_rangeslider_visible=False,  template = 'plotly_dark')
     
 
-    dateEnd = impulse[7] + timedelta(minutes=add_min)
+    dateEnd = impulse[7]
     
     need_type_level = 0
     color = ''
